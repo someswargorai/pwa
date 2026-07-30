@@ -1,7 +1,6 @@
 import webpush from 'web-push';
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+
 
 webpush.setVapidDetails(
   'mailto:test@example.com',
@@ -11,21 +10,15 @@ webpush.setVapidDetails(
 
 export async function POST(req: Request) {
   try {
-    const filePath = path.join(process.cwd(), 'public', 'subscribe.json');
-    
-    let fileData;
-    try {
-      fileData = await fs.readFile(filePath, 'utf-8');
-    } catch (err) {
+    const body = await req.json();
+    const { title, message, subscription } = body;
+
+    if (!subscription) {
       return NextResponse.json(
-        { error: "No subscription found! You need to visit localhost:3000 and allow Push Notifications first so the file is created." },
-        { status: 404 }
+        { error: "No subscription object provided in the request body." },
+        { status: 400 }
       );
     }
-    
-    const subscription = JSON.parse(fileData);
-
-    const { title, message } = await req.json();
 
     const payload = JSON.stringify({
       title: title || "New Notification!",
