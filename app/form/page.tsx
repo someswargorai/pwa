@@ -66,6 +66,24 @@ export default function SaaSForm() {
     setTimeout(() => setStatus("idle"), 5000);
   };
 
+  const addToCache = async () => {
+    const cache = await caches.open("testing/cache");
+    await cache.put("/api/submit", new Response("heyy there"));
+  }
+
+    useEffect(()=>{
+
+      const fetchCache = async()=>{
+        const response = await caches.match("testing/cache");
+        console.log(response?.json());
+
+        const cache = await caches.open("/api/submit");
+        console.log(cache)
+      } 
+
+      fetchCache();
+    },[]);
+
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decorative Gradients */}
@@ -91,6 +109,7 @@ export default function SaaSForm() {
             <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-violet-300 mb-3 tracking-tight">
               Upgrade to Premium
             </h1>
+            <button className="p-2.5 h-2 mt-2 mb-2 bg-blue-300 text-black" onClick={addToCache}>Add to Cache</button>
             <p className="text-slate-400 font-medium">Supercharge your workflow today.</p>
           </div>
 

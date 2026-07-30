@@ -1,6 +1,5 @@
 import {get} from 'idb-keyval';
-import { request } from 'node:http';
-import { cache } from 'react';
+
 
 self.addEventListener("sync", (event) => {
   if (event.tag === "offline_form_submit") {
@@ -40,24 +39,6 @@ self.addEventListener("sync", (event) => {
     );
   }
 });
-
-self.addEventListener("fetch", (event)=>{
-  event.respondWith(handleFetch(event.request))
-});
-
-async function handleFetch(request){
-
-  const cacheResponse = await caches.match(request);
-  if(cacheResponse) return cacheResponse;
-
-  //Fetch from network
-  const networkResponse = await fetch(request);
-  const cache = await caches.open("app/v1");
-  await cache.put(request, networkResponse.clone());
-
-  return networkResponse;
-  
-}
 
 self.addEventListener("push", (event) => {
   let data = {};
