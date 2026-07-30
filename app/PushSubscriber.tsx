@@ -23,7 +23,7 @@ export default function PushSubscriber() {
     }
   }, []);
 
-  const handleSubscribeAndTest = async () => {
+  const handleSubscribeAndTest = async (delayMs: number = 0) => {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
       alert("Push notifications are not supported in this browser.");
       return;
@@ -32,7 +32,6 @@ export default function PushSubscriber() {
     try {
       let permission = Notification.permission;
       
-      // Request permission on click (Fixes the iOS block!)
       if (permission === "default") {
         permission = await Notification.requestPermission();
       }
@@ -49,27 +48,27 @@ export default function PushSubscriber() {
           });
         }
 
-        // Save statelessly to localStorage
         localStorage.setItem("web_push_sub", JSON.stringify(subscribe));
         setSubscription(subscribe);
         
         // Immediately trigger the API, passing the subscription directly!
-        const res = await fetch("/api/notify", {
+        fetch("/api/notify", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ 
              subscription: subscribe, 
-             title: "Stateless Push Success!", 
-             message: "It works perfectly on Vercel and iOS!" 
+             title: delayMs > 0 ? "Delayed Push Arrived!" : "Stateless Push Success!", 
+             message: delayMs > 0 ? "You successfully received this while closed!" : "It works perfectly on Vercel and iOS!",
+             delay: delayMs
           })
+        }).then(async res => {
+          if (!res.ok) {
+            const err = await res.json();
+            alert("Push failed: " + err.error);
+          }
         });
-
-        if (!res.ok) {
-           const err = await res.json();
-           alert("Push failed: " + err.error);
-        }
       } else {
         alert("Push permission was denied.");
       }
@@ -80,11 +79,22 @@ export default function PushSubscriber() {
   };
 
   return (
-    <button 
-      onClick={handleSubscribeAndTest}
-      className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-medium transition-all"
-    >
-      {subscription ? "🔔 Send Test Push" : "🔔 Enable & Test Push"}
-    </button>
+    <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+      <button 
+        onClick={() => handleSubscribeAndTest(0)}
+        className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-full shadow-2xl font-medium transition-all"
+      >
+        {subscription ? "🔔 Send Test Push (Instant)" : "🔔 Enable & Test Push"}
+      </button>
+      
+      {subscription && (
+        <button 
+          onClick={() => handleSubscribeAndTest(8000)} // 8 second delay
+          className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-full shadow-2xl font-medium transition-all"
+        >
+          ⏱️ Test Push (8s Delay)
+        </button>
+      )}
+    </div>
   );
 }

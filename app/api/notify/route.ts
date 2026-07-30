@@ -18,6 +18,9 @@ export async function POST(req: Request) {
         { error: "No subscription object provided in the request body." },
         { status: 400 }
       );
+    if (body.delay) {
+      // Wait for the requested delay (e.g., 8 seconds) before sending
+      await new Promise(resolve => setTimeout(resolve, body.delay));
     }
 
     const payload = JSON.stringify({
