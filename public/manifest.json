@@ -1,21 +1,60 @@
 {
-    "name":"Dummy App",
-    "short_name":"Dummy",
-    "description":"PWA",
-    "start_url":"/",
-    "background_color":"#ffffff",
-    "display":"standalone",
-    "theme_color":"#2563eb",
-    "icons":[
+  "id": "/",
+  "name": "Nexus Storefront",
+  "short_name": "Nexus",
+  "description": "Premium E-Commerce Experience",
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#2563eb",
+  "dir": "ltr",
+  "lang": "en-US",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/dashboard_mockup.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Nexus Storefront Dashboard"
+    },
+    {
+      "src": "/dashboard_mockup.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Nexus Storefront Mobile View"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Forms",
+      "short_name": "Forms",
+      "description": "Go directly to the form page",
+      "url": "/form",
+      "icons": [
         {
-            "src":"/icon-192.png",
-            "sizes":"192x192",
-            "type":"image/png"
-        },
-        {
-            "src":"/icon-512.png",
-            "sizes":"512x512",
-            "type":"image/png"
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any maskable"
         }
-    ]
+      ]
+    }
+  ]
 }

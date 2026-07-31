@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Nexus Storefront",
   description: "Premium E-Commerce Experience",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Nexus",
+  },
 };
 
 const outfit = Outfit({

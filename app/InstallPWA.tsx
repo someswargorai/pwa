@@ -63,7 +63,7 @@ export default function InstallPWA() {
   return (
     <button 
       onClick={handleInstall}
-      className="relative group overflow-hidden rounded-full p-[1px] hidden md:block"
+      className="relative group overflow-hidden rounded-full p-[1px]"
     >
       <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-500 rounded-full opacity-70 group-hover:opacity-100 animate-[spin_3s_linear_infinite]" />
       <div className="relative bg-[#050505] px-6 py-2 rounded-full transition-all group-hover:bg-opacity-0">

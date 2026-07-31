@@ -13,7 +13,7 @@ const urlBase64ToUint8Array = (base64String: string) => {
   return outputArray;
 };
 
-export default function PushSubscriber() {
+export default function   PushSubscriber() {
   const [subscription, setSubscription] = useState<any>(null);
 
   useEffect(() => {
