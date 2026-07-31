@@ -68,5 +68,48 @@
         }
       ]
     }
+  ],
+  "display_override": ["window-controls-overlay", "tabbed", "minimal-ui"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/plain": [".txt"]
+      }
+    }
+  ],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "note_taking": {
+    "new_note_url": "/form"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+nexus",
+      "url": "/?url=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "widgets": [
+    {
+      "name": "Nexus Widget",
+      "description": "Quick view of Nexus storefront",
+      "tag": "nexus-widget",
+      "ms_ac_template": "/widget.json",
+      "data": "/widget-data.json",
+      "type": "application/json"
+    }
   ]
 }
