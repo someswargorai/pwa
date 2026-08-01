@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import SearchBar from "@/components/dashboard/SearchBar";
 import QuickActionsGrid from "@/components/dashboard/QuickActionsGrid";
 import RecentNotes, { Note } from "@/components/dashboard/RecentNotes";
-import { get } from "idb-keyval";
+import { get, set } from "idb-keyval";
 import { useRouter } from "next/navigation";
 
 // Mock data matching the screenshot exactly

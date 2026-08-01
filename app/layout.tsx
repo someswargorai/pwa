@@ -10,18 +10,18 @@ import ServiceWorkerRegistration from "@/components/dashboard/ServiceWorkerRegis
 import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
-  title: "Nexus Storefront",
-  description: "Premium E-Commerce Experience",
+  title: "Nexus Dashboard",
+  description: "Premium Minimalist UI for Notes and Tasks",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Nexus",
+    title: "Nexus Dashboard",
   },
 };
 
 const outfit = Outfit({
-  variable: "--font-outfitt",
+  variable: "--font-outfit",
   subsets: ["latin"]
 })
 
