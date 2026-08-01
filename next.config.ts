@@ -33,9 +33,13 @@ const withPWA = withPWAInit({
   },
 });
 
+const isCapacitor = process.env.CAPACITOR_BUILD?.trim() === 'true';
+
 const nextConfig: NextConfig = {
   turbopack:{},
+  output: isCapacitor ? "export" : undefined,
   images: {
+    unoptimized: isCapacitor,
     remotePatterns: [
       {
         protocol: "https",

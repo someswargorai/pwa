@@ -1,11 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Capacitor } from '@capacitor/core';
+import { SpeechRecognition as NativeSpeech } from '@capacitor-community/speech-recognition';
+import { Contacts as NativeContacts } from '@capacitor-community/contacts';
 
 function ClientPage() {
   const [isListening, setIsListening] = useState(false);
   const [feedback, setFeedback] = useState("Tap to initialize Nexus");
   const [transcript, setTranscript] = useState("");
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      NativeSpeech.addListener("partialResults", (data: any) => {
+        if (data.matches && data.matches.length > 0) {
+          const text = data.matches[0];
+          setTranscript(`"${text}"`);
+          handleCommand(text);
+          setIsListening(false);
+          NativeSpeech.stop();
+        }
+      });
+    }
+  }, []);
 
   const speak = (text: string) => {
     setFeedback(text);
@@ -45,7 +62,27 @@ function ClientPage() {
       window.location.href = "/form";
     }
     else if (command.includes("make a call") || command.includes("call someone")) {
-      if ('contacts' in navigator) {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const perm = await NativeContacts.requestPermissions();
+          if (perm.contacts === 'granted') {
+            const result = await NativeContacts.pickContact({ projection: { name: true, phones: true } });
+            const contact = result.contact;
+            if (contact && contact.phones && contact.phones.length > 0) {
+              const phone = contact.phones[0].number;
+              speak(`Calling ${contact.name?.display}`);
+              window.location.href = `tel:${phone}`;
+            } else {
+              speak("No phone number found for that contact.");
+            }
+          } else {
+            speak("I need contacts permission to make calls natively.");
+          }
+        } catch (error) {
+          console.error("Native Contact picker error:", error);
+          speak("I couldn't access your contacts.");
+        }
+      } else if ('contacts' in navigator) {
         try {
           speak("Select a contact to call");
           const contacts = await (navigator as any).contacts.select(
@@ -88,10 +125,36 @@ function ClientPage() {
     }
   };
 
-  const listen = () => {
+  const listen = async () => {
     // FIX FOR iOS SILENCE: We must play an empty sound immediately on click to "unlock" the audio engine
     const unlockAudio = new SpeechSynthesisUtterance("");
     window.speechSynthesis.speak(unlockAudio);
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const hasPermission = await NativeSpeech.checkPermissions();
+        if (hasPermission.speechRecognition !== 'granted') {
+          await NativeSpeech.requestPermissions();
+        }
+        
+        setIsListening(true);
+        setFeedback("Native Listening...");
+        setTranscript("");
+        
+        await NativeSpeech.start({
+          language: "en-US",
+          maxResults: 1,
+          prompt: "Listening...",
+          partialResults: true,
+          popup: false,
+        });
+      } catch (err) {
+        console.error("Native speech recognition error", err);
+        setIsListening(false);
+        setFeedback("Microphone failed natively.");
+      }
+      return;
+    }
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
