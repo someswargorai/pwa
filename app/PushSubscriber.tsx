@@ -80,21 +80,21 @@ export default function   PushSubscriber() {
 
   return (
     <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-      <button 
+      {/* <button 
         onClick={() => handleSubscribeAndTest(0)}
         className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-full shadow-2xl font-medium transition-all"
       >
         {subscription ? "🔔 Send Test Push (Instant)" : "🔔 Enable & Test Push"}
-      </button>
+      </button> */}
       
-      {subscription && (
+      {/* {subscription && (
         <button 
           onClick={() => handleSubscribeAndTest(8000)} // 8 second delay
           className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-full shadow-2xl font-medium transition-all"
         >
           ⏱️ Test Push (8s Delay)
         </button>
-      )}
+      )} */}
     </div>
   );
 }
