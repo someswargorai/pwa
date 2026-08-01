@@ -128,14 +128,19 @@ function ClientPage() {
       else if (aiRes.intent === "GENERAL_COMMAND") {
          const cmd = aiRes.command_type;
          if (cmd === "open_website" && aiRes.website_url) {
-           try {
-             const hostname = new URL(aiRes.website_url).hostname.replace("www.", "");
-             speak(`Opening ${hostname}`);
-             window.location.href = aiRes.website_url;
-           } catch (e) {
-             speak("Opening website");
+           speak(`Opening website`);
+           if (aiRes.app_uri) {
+             // Try to open the native app, fallback to website if it fails
+             window.location.href = aiRes.app_uri;
+             setTimeout(() => {
+                window.location.href = aiRes.website_url;
+             }, 500);
+           } else {
              window.location.href = aiRes.website_url;
            }
+         } else if (cmd === "open_camera") {
+           speak("Opening camera");
+           document.getElementById("camera-input")?.click();
          } else if (cmd === "dark_mode") {
            document.body.classList.toggle("dark");
            speak("Theme changed");
@@ -222,6 +227,7 @@ function ClientPage() {
       id="nexus-container"
       className="min-h-[100dvh] w-full bg-[#050505] flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden"
     >
+      <input type="file" accept="image/*" capture="environment" id="camera-input" className="hidden" />
       {/* Immersive Background Glow Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
          {/* Mouse tracking interactive glow (Desktop only) */}

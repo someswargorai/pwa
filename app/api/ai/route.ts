@@ -24,8 +24,9 @@ Schema:
   "fact": "extracted fact to save if saving memory (optional)",
   "task": "extracted action item if scheduling (optional)",
   "time_ms_from_now": "calculated milliseconds from now until the scheduled time (optional, required if SCHEDULE_TASK)",
-  "command_type": "open_website" | "dark_mode" | "form" | "joke" | "coin" | "time" | "creator" | null (for GENERAL_COMMAND)",
-  "website_url": "The full https url to open. If it's a search, construct the search URL (e.g. 'https://www.youtube.com/results?search_query=mkbhd'). (optional, required if open_website)"
+  "command_type": "open_website" | "open_camera" | "dark_mode" | "form" | "joke" | "coin" | "time" | "creator" | null (for GENERAL_COMMAND)",
+  "app_uri": "The native app deep link URI scheme if the user wants to open a specific app (e.g. 'youtube://', 'instagram://app', 'twitter://', 'spotify:search:shape+of+you'). Required if open_website and it is a known app.",
+  "website_url": "The full standard https fallback url to open (e.g. 'https://www.youtube.com/'). Required if open_website."
 }
 
 Examples:
@@ -33,10 +34,11 @@ Examples:
 - "remember that i have to buy sattu at 10pm coming from office" -> intent: SCHEDULE_TASK, task: "buy sattu coming from office", time_ms_from_now: (calculate based on 10pm)
 - "what did i tell you about react today" -> intent: QUERY_MEMORY, topic: "react", time_filter: "today"
 - "tell me a joke" -> intent: GENERAL_COMMAND, command_type: "joke"
-- "open instagram" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://instagram.com"
-- "open mkbhd video on youtube" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://www.youtube.com/results?search_query=mkbhd"
-- "play shape of you on spotify" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://open.spotify.com/search/shape%20of%20you"
-- "open bill gates linkedin profile" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://www.linkedin.com/search/results/all/?keywords=bill%20gates"
+- "open instagram" -> intent: GENERAL_COMMAND, command_type: "open_website", app_uri: "instagram://app", website_url: "https://instagram.com"
+- "open mkbhd video on youtube" -> intent: GENERAL_COMMAND, command_type: "open_website", app_uri: "youtube://results?search_query=mkbhd", website_url: "https://www.youtube.com/results?search_query=mkbhd"
+- "play shape of you on spotify" -> intent: GENERAL_COMMAND, command_type: "open_website", app_uri: "spotify:search:shape+of+you", website_url: "https://open.spotify.com/search/shape%20of%20you"
+- "open bill gates linkedin profile" -> intent: GENERAL_COMMAND, command_type: "open_website", app_uri: "linkedin://", website_url: "https://www.linkedin.com/search/results/all/?keywords=bill%20gates"
+- "open camera" or "take a photo" -> intent: GENERAL_COMMAND, command_type: "open_camera"
 - "am i forgetting anything" or "what tasks do i have" -> intent: QUERY_TASKS
 `;
 
