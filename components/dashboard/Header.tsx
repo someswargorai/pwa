@@ -3,7 +3,6 @@
 import { Settings, Bell, Moon, Sun } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import InstallPWA from "@/app/InstallPWA";
 
 export default function Header() {
   const router = useRouter();
@@ -73,7 +72,6 @@ export default function Header() {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <InstallPWA />
         <button onClick={toggleTheme} className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm border border-gray-100 hover:bg-gray-50 transition-all">
           {isDark ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
         </button>
