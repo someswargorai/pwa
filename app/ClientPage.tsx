@@ -1,12 +1,13 @@
 "use client";
 
 import { set, get } from "idb-keyval";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function ClientPage() {
   const [isListening, setIsListening] = useState(false);
   const [feedback, setFeedback] = useState("Tap to initialize Nexus");
   const [transcript, setTranscript] = useState("");
+
   const [memoryState, setMemoryState] = useState<'IDLE' | 'AWAITING_KEY' | 'AWAITING_VALUE'>('IDLE');
   const [pendingKey, setPendingKey] = useState("");
 
@@ -95,7 +96,7 @@ function ClientPage() {
     }
   };
 
-  const listen = () => {
+  const listen = async () => {
     // FIX FOR iOS SILENCE: We must play an empty sound immediately on click to "unlock" the audio engine
     const unlockAudio = new SpeechSynthesisUtterance("");
     window.speechSynthesis.speak(unlockAudio);
