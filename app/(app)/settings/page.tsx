@@ -5,6 +5,7 @@ import { clear, get } from "idb-keyval";
 import { toast } from "sonner";
 import { Moon, Sun, Download, Trash2, Bell, ChevronLeft, Shield, Database } from "lucide-react";
 import { useRouter } from "next/navigation";
+import InstallPWA from "@/app/InstallPWA";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function SettingsPage() {
     if (document.documentElement.classList.contains('dark-theme')) {
       setIsDark(true);
     }
-    if ("Notification" in window && Notification.permission === "granted") {
+    if (localStorage.getItem('nexus_notifications') === 'true' && "Notification" in window && Notification.permission === "granted") {
       setNotificationsEnabled(true);
     }
     
@@ -55,18 +56,26 @@ export default function SettingsPage() {
     }
   };
 
-  const requestNotifications = async () => {
-    if (!("Notification" in window)) {
-      toast.error("This browser does not support notifications.");
-      return;
-    }
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      setNotificationsEnabled(true);
-      toast.success("Notifications enabled!");
-    } else {
+  const toggleNotifications = async () => {
+    if (notificationsEnabled) {
       setNotificationsEnabled(false);
-      toast.error("Notification permission denied.");
+      localStorage.setItem('nexus_notifications', 'false');
+      toast.success("Notifications disabled.");
+    } else {
+      if (!("Notification" in window)) {
+        toast.error("This browser does not support notifications.");
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        setNotificationsEnabled(true);
+        localStorage.setItem('nexus_notifications', 'true');
+        toast.success("Notifications enabled!");
+      } else {
+        setNotificationsEnabled(false);
+        localStorage.setItem('nexus_notifications', 'false');
+        toast.error("Notification permission denied.");
+      }
     }
   };
 
@@ -190,12 +199,16 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <button 
-                  onClick={requestNotifications}
+                  onClick={toggleNotifications}
                   className={`w-12 h-6 rounded-full p-1 transition-colors ${notificationsEnabled ? 'bg-brand-blue' : 'bg-gray-200'}`}
                 >
                   <div className={`w-4 h-4 rounded-full bg-white transition-transform ${notificationsEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
                 </button>
               </div>
+
+              <div className="w-[calc(100%-2rem)] h-[1px] bg-gray-50 mx-auto"></div>
+
+              <InstallPWA variant="settings" />
 
             </div>
           </section>

@@ -13,7 +13,7 @@ export default function BottomNav() {
                     pathname === "/settings" ? "settings" : "home";
 
   return (
-    <div className="fixed bottom-16 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-xl border border-gray-100/50 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-[32px] px-2 py-2 flex items-center gap-1 z-50">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-xl border border-gray-100/50 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-[32px] px-2 py-2 flex items-center gap-1 z-50">
       
       <button onClick={() => router.push("/")} className="relative w-[52px] h-[52px] flex items-center justify-center rounded-full group">
         {activeTab === "home" && (

@@ -79,6 +79,11 @@ export default function CreateNoteView({ onClose, onSave }: { onClose: () => voi
         return;
       }
 
+      if (localStorage.getItem('nexus_notifications') !== 'true') {
+        toast.error("Please enable push notifications in Settings first.");
+        return;
+      }
+
       let permission = Notification.permission;
       if (permission !== "granted") {
         permission = await Notification.requestPermission();
@@ -87,21 +92,35 @@ export default function CreateNoteView({ onClose, onSave }: { onClose: () => voi
       if (permission === "granted") {
         toast.success(`Reminder scheduled for ${new Date(scheduledTime).toLocaleTimeString()}!`);
         
-        // Native fallback scheduler
-        setTimeout(() => {
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(reg => {
-              reg.showNotification(title || "Note Reminder", {
-                body: "It's time to review your note!",
-                icon: "/icon.png"
-              });
-            });
-          } else {
-            new Notification(title || "Note Reminder", {
+        // Try to use the Notification Triggers API for true background scheduling (Android/Chrome)
+        if ('showTrigger' in Notification.prototype && 'serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title || "Note Reminder", {
               body: "It's time to review your note!",
+              icon: "/icon-192.jpg",
+              // @ts-expect-error - experimental API
+              showTrigger: new window.TimestampTrigger(scheduledTime)
             });
-          }
-        }, delay);
+          });
+        } else {
+          // Native fallback scheduler (only works while app is open)
+          setTimeout(() => {
+            if (localStorage.getItem('nexus_notifications') !== 'true') return;
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.ready.then(reg => {
+                reg.showNotification(title || "Note Reminder", {
+                  body: "It's time to review your note!",
+                  icon: "/icon-192.jpg"
+                });
+              });
+            } else {
+              new Notification(title || "Note Reminder", {
+                body: "It's time to review your note!",
+                icon: "/icon-192.jpg"
+              });
+            }
+          }, delay);
+        }
       } else {
         toast.error("Notification permission denied.");
       }
