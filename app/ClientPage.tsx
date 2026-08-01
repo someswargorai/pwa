@@ -26,12 +26,12 @@ function ClientPage() {
     console.log("Command received: ", command);
     
     if (command.includes("open youtube")) {
-      window.open("https://youtube.com");
       speak("Opening YouTube");
+      window.location.href = "https://youtube.com";
     }
     else if (command.includes("open github")) {
-      window.open("https://github.com");
       speak("Opening GitHub");
+      window.location.href = "https://github.com";
     }
     else if (command.includes("what time") || command.includes("current time")) {
       speak(`It is ${new Date().toLocaleTimeString()}`);
@@ -89,6 +89,10 @@ function ClientPage() {
   };
 
   const listen = () => {
+    // FIX FOR iOS SILENCE: We must play an empty sound immediately on click to "unlock" the audio engine
+    const unlockAudio = new SpeechSynthesisUtterance("");
+    window.speechSynthesis.speak(unlockAudio);
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
