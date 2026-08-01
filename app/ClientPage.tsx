@@ -267,7 +267,7 @@ function ClientPage() {
           <div className="mb-12 w-full max-w-lg transition-all animate-in fade-in slide-in-from-bottom-4 px-4">
             <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-2">
               <h3 className="text-xs font-semibold text-fuchsia-400/80 tracking-[0.2em] uppercase">
-                Results for "{memoryResults.keyword}"
+                Results for &quot;{memoryResults.keyword}&quot;
               </h3>
               <button onClick={() => setMemoryResults(null)} className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider">
                 Close
