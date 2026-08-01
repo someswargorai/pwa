@@ -1,11 +1,14 @@
 "use client";
 
+import { set, get } from "idb-keyval";
 import { useState } from "react";
 
 function ClientPage() {
   const [isListening, setIsListening] = useState(false);
   const [feedback, setFeedback] = useState("Tap to initialize Nexus");
   const [transcript, setTranscript] = useState("");
+  const [memoryState, setMemoryState] = useState<'IDLE' | 'AWAITING_KEY' | 'AWAITING_VALUE'>('IDLE');
+  const [pendingKey, setPendingKey] = useState("");
 
   const speak = (text: string) => {
     setFeedback(text);
@@ -22,12 +25,41 @@ function ClientPage() {
   };
 
   const handleCommand = async (command: string) => {
-    command = command.toLowerCase();
+    command = command.toLowerCase().replace(/[.?!]/g, "");
     console.log("Command received: ", command);
+
+    if (memoryState === 'AWAITING_KEY') {
+      setPendingKey(command);
+      setMemoryState('AWAITING_VALUE');
+      speak(`Got it. What should I remember about ${command}? Tap to tell me.`);
+      return;
+    }
+    
+    if (memoryState === 'AWAITING_VALUE') {
+      await set(pendingKey, command);
+      setMemoryState('IDLE');
+      const savedKey = pendingKey;
+      setPendingKey("");
+      speak(`Saved successfully. I will remember ${savedKey}.`);
+      return;
+    }
     
     if (command.includes("open youtube")) {
       speak("Opening YouTube");
       window.location.href = "https://youtube.com";
+    }
+    else if(command === "remember this" || command.includes("remember this")) {
+      setMemoryState('AWAITING_KEY');
+      speak("What is the topic you want me to remember?");
+    }
+    else if (command.includes("tell me about") || command.includes("what about")) {
+      let topic = command.replace(/tell me about|what about/gi, "").trim();
+      const value = await get(topic);
+      if (value) {
+        speak(`${value}`);
+      } else {
+        speak(`I don't have any memories saved for ${topic}.`);
+      }
     }
     else if (command.includes("open github")) {
       speak("Opening GitHub");
@@ -44,30 +76,6 @@ function ClientPage() {
       speak("Navigating to the forms page");
       window.location.href = "/form";
     }
-    else if (command.includes("make a call") || command.includes("call someone")) {
-      if ('contacts' in navigator) {
-        try {
-          speak("Select a contact to call");
-          const contacts = await (navigator as any).contacts.select(
-            ["name", "tel"],
-            { multiple: false }
-          );
-          if (contacts && contacts.length > 0 && contacts[0].tel && contacts[0].tel.length > 0) {
-            const name = contacts[0].name[0];
-            const phone = contacts[0].tel[0];
-            speak(`Calling ${name}`);
-            window.location.href = `tel:${phone}`;
-          } else {
-            speak("No phone number found for that contact.");
-          }
-        } catch (error) {
-          console.error("Contact picker error:", error);
-          speak("I couldn't access your contacts.");
-        }
-      } else {
-        speak("The Contact Picker API is not supported on this browser.");
-      }
-    }
     else if (command.includes("tell me a joke")) {
       const jokes = [
         "Why do programmers prefer dark mode? Because light attracts bugs!", 
@@ -82,8 +90,7 @@ function ClientPage() {
     }
     else if (command.includes("who created you") || command.includes("who is your creator")) {
       speak("I was created by you, my brilliant developer!");
-    }
-    else {
+    } else {
       speak("Command not recognized. Please try again.");
     }
   };
