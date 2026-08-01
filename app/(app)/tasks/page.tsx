@@ -148,41 +148,35 @@ export default function TasksPage() {
 
         {activeProjects.length > 0 ? (
           <>
-            {/* Premium SaaS Progress Header */}
-            <div className="mb-8 p-6 bg-[#0f172a] rounded-[24px] text-white shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden keep-colors border border-white/10 group">
-              {/* Abstract Glassmorphic Background Elements */}
-              <div className="absolute top-[-30%] right-[-10%] w-[60%] h-[150%] bg-gradient-to-bl from-brand-blue/30 to-purple-600/30 rounded-full blur-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-700"></div>
-              <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[100%] bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50 pointer-events-none mix-blend-overlay"></div>
-              
-              <div className="relative z-10 flex flex-col h-full">
+            {/* Simple SaaS Progress Header */}
+            <div className="mb-8 p-6 bg-white rounded-[24px] shadow-[0_2px_15px_-5px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col">
+              <div className="flex flex-col h-full">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-md">
-                    <CheckCircle2 size={16} className="text-cyan-400" />
+                  <div className="w-8 h-8 rounded-full bg-brand-blue/10 flex items-center justify-center">
+                    <CheckCircle2 size={16} className="text-brand-blue" strokeWidth={2.5} />
                   </div>
-                  <h2 className="text-[14px] font-bold text-gray-200 tracking-wide uppercase">Total Progress</h2>
+                  <h2 className="text-[14px] font-bold text-gray-500 tracking-wide uppercase">Total Progress</h2>
                 </div>
                 
                 <div className="flex items-end justify-between mb-4 mt-2">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-sm">{progress}</span>
+                    <span className="text-5xl font-black tracking-tighter text-gray-900 drop-shadow-sm">{progress}</span>
                     <span className="text-xl font-bold text-gray-400">%</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[13px] font-semibold text-gray-300 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 backdrop-blur-md">
+                    <span className="text-[13px] font-semibold text-brand-blue bg-brand-blue/10 px-3 py-1.5 rounded-full">
                       {completedTasks} / {totalTasks} Tasks
                     </span>
                   </div>
                 </div>
                 
                 {/* Premium Progress Bar Track */}
-                <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden relative shadow-inner border border-white/5 mt-1 backdrop-blur-sm">
+                <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden relative shadow-inner mt-1">
                   <div 
                     className="h-full rounded-full transition-all duration-1000 ease-out relative"
                     style={{ 
                       width: `${progress}%`,
                       background: 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)',
-                      boxShadow: '0 0 20px rgba(6,182,212,0.5)'
                     }}
                   >
                     {/* Inner highlight for glass effect */}
