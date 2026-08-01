@@ -66,3 +66,19 @@ body {
       #4d79ff
     );
 }
+
+/* Beautiful Custom Scrollbar for memory results */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(232, 121, 249, 0.3); /* fuchsia-400 with opacity */
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(232, 121, 249, 0.6);
+}

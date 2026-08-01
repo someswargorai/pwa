@@ -8,8 +8,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing transcript" }, { status: 400 });
     }
 
-    const apiKey = "AIzaSyCQhIKrZrB3GybRPWDqtFIakYHtrrBhrnQ";
-    const model = "gemini-2.5-flash"; // User specifically requested 2.5 flash
+    const apiKey = process.env.AI_KEY;
+    const model = "gemini-3.5-flash"; // User specifically requested 2.5 flash
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const systemPrompt = `You are the brain of a voice assistant named Nexus. 
@@ -24,7 +24,8 @@ Schema:
   "fact": "extracted fact to save if saving memory (optional)",
   "task": "extracted action item if scheduling (optional)",
   "time_ms_from_now": "calculated milliseconds from now until the scheduled time (optional, required if SCHEDULE_TASK)",
-  "command_type": "open_youtube" | "open_github" | "dark_mode" | "form" | "joke" | "coin" | "time" | "creator" | null (for GENERAL_COMMAND)
+  "command_type": "open_website" | "dark_mode" | "form" | "joke" | "coin" | "time" | "creator" | null (for GENERAL_COMMAND)",
+  "website_url": "The full https url to open. If it's a search, construct the search URL (e.g. 'https://www.youtube.com/results?search_query=mkbhd'). (optional, required if open_website)"
 }
 
 Examples:
@@ -32,6 +33,10 @@ Examples:
 - "remember that i have to buy sattu at 10pm coming from office" -> intent: SCHEDULE_TASK, task: "buy sattu coming from office", time_ms_from_now: (calculate based on 10pm)
 - "what did i tell you about react today" -> intent: QUERY_MEMORY, topic: "react", time_filter: "today"
 - "tell me a joke" -> intent: GENERAL_COMMAND, command_type: "joke"
+- "open instagram" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://instagram.com"
+- "open mkbhd video on youtube" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://www.youtube.com/results?search_query=mkbhd"
+- "play shape of you on spotify" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://open.spotify.com/search/shape%20of%20you"
+- "open bill gates linkedin profile" -> intent: GENERAL_COMMAND, command_type: "open_website", website_url: "https://www.linkedin.com/search/results/all/?keywords=bill%20gates"
 - "am i forgetting anything" or "what tasks do i have" -> intent: QUERY_TASKS
 `;
 
@@ -63,8 +68,20 @@ Examples:
     }
 
     const data = await response.json();
-    const resultText = data.candidates[0].content.parts[0].text;
-    const resultJson = JSON.parse(resultText);
+    let resultText = data.candidates[0].content.parts[0].text;
+    
+    // Remove markdown code block if Gemini wrapped it
+    if (resultText.startsWith("```")) {
+      resultText = resultText.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
+    }
+    
+    let resultJson;
+    try {
+      resultJson = JSON.parse(resultText);
+    } catch (e) {
+      console.error("Failed to parse AI response. Raw text was:", resultText);
+      throw e;
+    }
 
     return NextResponse.json(resultJson);
 

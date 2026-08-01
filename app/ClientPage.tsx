@@ -127,12 +127,15 @@ function ClientPage() {
       }
       else if (aiRes.intent === "GENERAL_COMMAND") {
          const cmd = aiRes.command_type;
-         if (cmd === "open_youtube") {
-           speak("Opening YouTube");
-           window.location.href = "https://youtube.com";
-         } else if (cmd === "open_github") {
-           speak("Opening GitHub");
-           window.location.href = "https://github.com";
+         if (cmd === "open_website" && aiRes.website_url) {
+           try {
+             const hostname = new URL(aiRes.website_url).hostname.replace("www.", "");
+             speak(`Opening ${hostname}`);
+             window.location.href = aiRes.website_url;
+           } catch (e) {
+             speak("Opening website");
+             window.location.href = aiRes.website_url;
+           }
          } else if (cmd === "dark_mode") {
            document.body.classList.toggle("dark");
            speak("Theme changed");
@@ -263,26 +266,6 @@ function ClientPage() {
           )}
         </div>
 
-        {memoryResults && (
-          <div className="mb-12 w-full max-w-lg transition-all animate-in fade-in slide-in-from-bottom-4 px-4">
-            <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-2">
-              <h3 className="text-xs font-semibold text-fuchsia-400/80 tracking-[0.2em] uppercase">
-                Results for &quot;{memoryResults.keyword}&quot;
-              </h3>
-              <button onClick={() => setMemoryResults(null)} className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider">
-                Close
-              </button>
-            </div>
-            <ul className="max-h-[40vh] overflow-y-auto custom-scrollbar flex flex-col pr-2">
-              {memoryResults.facts.map((fact, i) => (
-                <li key={i} className="text-slate-200 font-light text-sm sm:text-base leading-relaxed py-4 border-b border-white/5 last:border-0 text-left hover:bg-white/5 px-3 rounded-lg transition-colors cursor-default">
-                  {fact}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {/* The Core Orb Interactive Button */}
         <button 
           onClick={listen}
@@ -316,6 +299,26 @@ function ClientPage() {
             </svg>
           </div>
         </button>
+
+        {memoryResults && (
+          <div className="mt-8 w-full max-w-lg transition-all animate-in fade-in slide-in-from-bottom-4 px-4 pb-8 z-20">
+            <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-2">
+              <h3 className="text-xs font-semibold text-fuchsia-400/80 tracking-[0.2em] uppercase">
+                Results for &quot;{memoryResults.keyword}&quot;
+              </h3>
+              <button onClick={() => setMemoryResults(null)} className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider">
+                Close
+              </button>
+            </div>
+            <ul className="max-h-[40vh] overflow-y-auto custom-scrollbar flex flex-col pr-2">
+              {memoryResults.facts.map((fact, i) => (
+                <li key={i} className="text-slate-200 font-light text-sm sm:text-base leading-relaxed py-4 border-b border-white/5 last:border-0 text-left hover:bg-white/5 px-3 rounded-lg transition-colors cursor-default">
+                  {fact}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
       </div>
     </div>
