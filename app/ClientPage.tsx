@@ -56,7 +56,15 @@ export default function ClientPage() {
         set("nexus_dashboard_notes", MOCK_NOTES);
       }
     }
+    
     loadNotes();
+    
+    window.addEventListener('notesUpdated', loadNotes);
+    window.addEventListener('focus', loadNotes);
+    return () => {
+      window.removeEventListener('notesUpdated', loadNotes);
+      window.removeEventListener('focus', loadNotes);
+    };
   }, []);
 
   const handlePin = async (id: string) => {

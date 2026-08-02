@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import Layout from "./provider/tanstackQueryProvider";
 import { LayoutScript } from "./script/layout.script";
@@ -59,10 +60,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable}  h-full antialiased ${outfit.variable}`}
     >
       <head>
-        <script type="application/json-ld" dangerouslySetInnerHTML={{
+        <Script id="schema-jsonld" type="application/json-ld" strategy="beforeInteractive" dangerouslySetInnerHTML={{
           __html: JSON.stringify(LayoutScript)
         }}/>
-        <script dangerouslySetInnerHTML={{
+        <Script id="theme-toggle" strategy="beforeInteractive" dangerouslySetInnerHTML={{
           __html: `
             try {
               let isDark = false;

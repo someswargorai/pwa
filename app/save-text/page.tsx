@@ -25,6 +25,7 @@ export default function SaveTextPage() {
     const updatedNotes = [noteObj, ...existingNotes];
     
     await set("nexus_dashboard_notes", updatedNotes);
+    window.dispatchEvent(new Event('notesUpdated'));
     router.push("/");
   };
 

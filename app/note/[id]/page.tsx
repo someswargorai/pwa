@@ -40,16 +40,20 @@ export default function EditNotePage() {
 
   const handleSave = async () => {
     if (!note) return;
+    
+    // Read DOM synchronously BEFORE any state updates or async yields to prevent React from overwriting it!
+    const finalContent = contentRef.current ? contentRef.current.innerHTML : note.content;
+    
     setIsSaving(true);
     const savedNotes: Note[] = (await get("nexus_dashboard_notes")) || [];
     const updatedNotes = savedNotes.map((n) => {
       if (n.id === note.id) {
-        const finalContent = contentRef.current ? contentRef.current.innerHTML : note.content;
         return { ...n, title: title.trim(), content: finalContent, isLocked };
       }
       return n;
     });
     await set("nexus_dashboard_notes", updatedNotes);
+    window.dispatchEvent(new Event('notesUpdated'));
     setSavedAt(new Date());
     setTimeout(() => {
       setIsSaving(false);
