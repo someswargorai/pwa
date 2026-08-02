@@ -27,6 +27,14 @@ export default function ServiceWorkerRegistration() {
           console.log('ServiceWorker registration failed: ', err);
         });
       });
+      
+      // Clear badge count on app open
+      if ('clearAppBadge' in navigator) {
+        navigator.clearAppBadge().catch(console.error);
+      }
+      import('idb-keyval').then(({ set }) => {
+        set('nexus_badge_count', 0).catch(console.error);
+      });
     }
 
     return () => {

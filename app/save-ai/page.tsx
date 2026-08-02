@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Sparkles, Send, Save, Copy, RotateCcw, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { get, set } from "idb-keyval";
 import { Note } from "@/components/dashboard/RecentNotes";
 import { toast } from "sonner";
@@ -119,17 +120,17 @@ export default function SaveAIPage() {
   };
 
   return (
-    /* Full-height flex column — header fixed, messages scroll, input pinned at bottom */
-    <div className="fixed inset-x-0 top-0 flex flex-col bg-[#f8f9fc] z-50" style={{ bottom: '88px', touchAction: "manipulation" }}>
+    /* Standard document flow with dvh — iOS Safari handles sticky headers much better than fixed ones */
+    <div className="flex flex-col min-h-[100dvh] bg-[#f8f9fc] relative z-50">
 
       {/* Ambient */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+      <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-[55%] h-[50%] bg-violet-200/20 rounded-full blur-[130px]" />
         <div className="absolute bottom-[5%] left-[-5%] w-[50%] h-[45%] bg-fuchsia-200/15 rounded-full blur-[110px]" />
       </div>
 
       {/* ── STICKY HEADER ── */}
-      <div className="relative z-20 bg-[#f8f9fc]/90 backdrop-blur-xl border-b border-gray-100/80 px-4 py-3 flex items-center gap-3 shrink-0">
+      <div className="sticky top-0 z-30 bg-[#f8f9fc]/90 backdrop-blur-xl border-b border-gray-100/80 px-4 py-3 flex items-center gap-3 shrink-0">
         <button
           onClick={() => router.push("/")}
           className="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors active:scale-90 shrink-0"
@@ -159,8 +160,8 @@ export default function SaveAIPage() {
         )}
       </div>
 
-      {/* ── MESSAGES ── scrollable middle section */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 relative z-10" style={{ overscrollBehavior: "contain" }}>
+      {/* ── MESSAGES ── */}
+      <div className="flex-1 w-full px-4 py-4 relative z-10">
 
         {/* Empty state */}
         {messages.length === 0 && (
@@ -188,8 +189,15 @@ export default function SaveAIPage() {
 
         {/* Messages */}
         <div className="flex flex-col gap-3 max-w-xl mx-auto">
+          <AnimatePresence initial={false}>
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex items-end gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+            <motion.div 
+              key={msg.id} 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className={`flex items-end gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+            >
 
               {/* AI avatar */}
               {msg.role === "ai" && (
@@ -245,15 +253,16 @@ export default function SaveAIPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* ── INPUT BAR — pinned at bottom, shifts with keyboard ── */}
-      <div className="relative z-20 bg-[#f8f9fc]/95 backdrop-blur-xl border-t border-gray-100/80 px-4 py-3 shrink-0">
-        <div className="max-w-xl mx-auto flex items-center gap-2.5">
+      {/* ── INPUT BAR — pinned at bottom ── */}
+      <div className="sticky bottom-0 z-30 bg-[#f8f9fc]/95 backdrop-blur-xl border-t border-gray-100/80 px-4 pt-3 shrink-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+        <div className="max-w-xl mx-auto flex items-end gap-2.5">
           {/* Input */}
           <div className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-[0_1px_6px_rgba(0,0,0,0.05)] focus-within:border-violet-300 focus-within:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] transition-all">
             <textarea

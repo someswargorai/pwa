@@ -1,6 +1,42 @@
-import {get} from 'idb-keyval';
+function getDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('keyval-store');
+    request.onupgradeneeded = () => request.result.createObjectStore('keyval');
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
 
+async function get(key) {
+  try {
+    const db = await getDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('keyval', 'readonly');
+      const store = transaction.objectStore('keyval');
+      const request = store.get(key);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (e) {
+    console.error("IDB get error", e);
+    return undefined;
+  }
+}
 
+async function set(key, val) {
+  try {
+    const db = await getDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('keyval', 'readwrite');
+      const store = transaction.objectStore('keyval');
+      const request = store.put(val, key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (e) {
+    console.error("IDB set error", e);
+  }
+}
 self.addEventListener("sync", (event) => {
   if (event.tag === "offline_form_submit") {
     event.waitUntil(
@@ -59,7 +95,21 @@ self.addEventListener("push", (event) => {
     },
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    (async () => {
+      try {
+        let badgeCount = (await get("nexus_badge_count")) || 0;
+        badgeCount++;
+        await set("nexus_badge_count", badgeCount);
+        if (navigator.setAppBadge) {
+          await navigator.setAppBadge(badgeCount);
+        }
+      } catch (e) {
+        console.error("Failed to update badge", e);
+      }
+      return self.registration.showNotification(title, options);
+    })()
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {

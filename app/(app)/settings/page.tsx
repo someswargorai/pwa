@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { clear, get } from "idb-keyval";
 import { toast } from "sonner";
-import { Moon, Sun, Download, Trash2, Bell, ChevronLeft, Shield, Database, Mail } from "lucide-react";
+import { Moon, Sun, Download, Trash2, Bell, ChevronLeft, Shield, Database, Mail, UserRound, Briefcase, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import InstallPWA from "@/app/InstallPWA";
 
@@ -68,7 +68,6 @@ export default function SettingsPage() {
 
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
-
     for (let i = 0; i < rawData.length; ++i) {
       outputArray[i] = rawData.charCodeAt(i);
     }
@@ -83,7 +82,6 @@ export default function SettingsPage() {
         toast.error("Push notifications are not supported by your browser");
         return;
       }
-
       setIsSubscribing(true);
       try {
         const permission = await Notification.requestPermission();
@@ -91,12 +89,10 @@ export default function SettingsPage() {
           const registration = await navigator.serviceWorker.ready;
           const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
           const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey!);
-
           const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: convertedVapidKey
           });
-
           localStorage.setItem('nexus_push_subscription', JSON.stringify(subscription));
           localStorage.setItem('nexus_notifications', 'true');
           setNotifications(true);
@@ -105,7 +101,6 @@ export default function SettingsPage() {
           toast.error("Notification permission denied");
         }
       } catch (err: any) {
-        console.error("Failed to subscribe to push", err);
         toast.error("Failed to enable push notifications");
       } finally {
         setIsSubscribing(false);
@@ -135,7 +130,6 @@ export default function SettingsPage() {
         toast.info("No data to export");
         return;
       }
-      
       const blob = new Blob([JSON.stringify(savedNotes, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -155,189 +149,236 @@ export default function SettingsPage() {
     try {
       await clear();
       toast.success("All data cleared successfully");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (e) {
       toast.error("Failed to clear data");
     }
   };
 
+  // Modern Toggle Component
+  const Toggle = ({ checked, onChange, disabled = false }: { checked: boolean, onChange: () => void, disabled?: boolean }) => (
+    <button
+      onClick={onChange}
+      disabled={disabled}
+      className={`relative w-[46px] h-[26px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.4,0.0,0.2,1)] ${
+        checked ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500' : 'bg-gray-200'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} shadow-inner`}
+    >
+      <div 
+        className={`absolute top-[2px] left-[2px] w-[22px] h-[22px] rounded-full bg-white shadow-[0_2px_5px_rgba(0,0,0,0.2)] transition-transform duration-300 ease-[cubic-bezier(0.4,0.0,0.2,1)] ${
+          checked ? 'translate-x-[20px]' : 'translate-x-0'
+        }`}
+      />
+    </button>
+  );
+
   return (
-    <div className="flex-1 w-full pb-32">
-      <div className="w-full max-w-2xl mx-auto px-5 pt-4">
+    <div className="flex-1 w-full text-gray-900 bg-[#f8f9fc] relative selection:bg-violet-500/20">
+      
+      {/* Ambient background */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[50%] bg-violet-200/25 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[20%] left-[-10%] w-[55%] h-[40%] bg-fuchsia-200/20 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-2xl mx-auto px-5 pt-6 pb-32">
         
-        <div className="flex items-center gap-3 mb-8">
-          <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-gray-600 hover:bg-gray-50 active:scale-95 transition-all">
-            <ChevronLeft size={20} strokeWidth={2.5} />
-          </button>
-          <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">Settings</h1>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 text-gray-600 hover:text-gray-900 active:scale-90 transition-all">
+              <ChevronLeft size={20} strokeWidth={2.5} />
+            </button>
+            <h1 className="text-[24px] font-bold text-gray-900 tracking-tight leading-none">Settings</h1>
+          </div>
+          <div className="px-3 py-1.5 rounded-full bg-white border border-gray-100 shadow-sm flex items-center gap-1.5">
+            <Zap size={14} className="text-amber-500 fill-amber-500" />
+            <span className="text-[12px] font-bold text-gray-700">Pro</span>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
           
+          {/* Profile Section */}
           <section>
-            <h2 className="text-[14px] font-bold text-brand-blue uppercase tracking-wider mb-3 ml-1">Profile</h2>
-            <div className="bg-white rounded-3xl p-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-white flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-bold text-gray-700 ml-1">Display Name</label>
-                <input 
-                  type="text" 
-                  value={profile.name}
-                  onChange={(e) => updateProfile('name', e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-[15px] font-medium text-gray-900 outline-none focus:border-brand-blue focus:ring-0 transition-colors"
-                />
+            <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-2">Profile</h2>
+            <div className="bg-white rounded-[28px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100/60">
+              
+              <div className="flex items-center gap-5 mb-6">
+                <div className="relative w-20 h-20 rounded-[24px] overflow-hidden bg-gradient-to-br from-violet-100 to-fuchsia-100 shadow-inner flex-shrink-0">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/notionists/svg?seed=${profile.avatarSeed || 'Default'}`} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 rounded-[24px] ring-1 ring-inset ring-black/5 pointer-events-none" />
+                </div>
+                <div>
+                  <h3 className="text-[18px] font-bold text-gray-900 leading-tight">{profile.name || 'Your Name'}</h3>
+                  <p className="text-[14px] text-gray-500 font-medium mt-0.5">{profile.designation || 'Your Role'}</p>
+                </div>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-bold text-gray-700 ml-1">Designation</label>
-                <input 
-                  type="text" 
-                  value={profile.designation}
-                  onChange={(e) => updateProfile('designation', e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-[15px] font-medium text-gray-900 outline-none focus:border-brand-blue focus:ring-0 transition-colors"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5 mb-1">
-                <label className="text-[13px] font-bold text-gray-700 ml-1">Avatar Seed (Text)</label>
-                <input 
-                  type="text" 
-                  value={profile.avatarSeed}
-                  onChange={(e) => updateProfile('avatarSeed', e.target.value)}
-                  placeholder="Type anything to generate a new avatar"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-[15px] font-medium text-gray-900 outline-none focus:border-brand-blue focus:ring-0 transition-colors"
-                />
+
+              <div className="flex flex-col gap-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
+                    <UserRound size={16} strokeWidth={2.5} />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={profile.name}
+                    onChange={(e) => updateProfile('name', e.target.value)}
+                    placeholder="Display Name"
+                    className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3.5 text-[16px] font-medium text-gray-900 outline-none focus:bg-white focus:border-violet-200 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] transition-all placeholder:text-gray-400"
+                  />
+                </div>
+                
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
+                    <Briefcase size={16} strokeWidth={2.5} />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={profile.designation}
+                    onChange={(e) => updateProfile('designation', e.target.value)}
+                    placeholder="Designation"
+                    className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3.5 text-[16px] font-medium text-gray-900 outline-none focus:bg-white focus:border-violet-200 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] transition-all placeholder:text-gray-400"
+                  />
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
+                    <Zap size={16} strokeWidth={2.5} />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={profile.avatarSeed}
+                    onChange={(e) => updateProfile('avatarSeed', e.target.value)}
+                    placeholder="Avatar Seed (Type anything!)"
+                    className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl pl-11 pr-4 py-3.5 text-[16px] font-medium text-gray-900 outline-none focus:bg-white focus:border-violet-200 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] transition-all placeholder:text-gray-400"
+                  />
+                </div>
               </div>
             </div>
           </section>
 
+          {/* Preferences */}
           <section>
-            <h2 className="text-[14px] font-bold text-brand-blue uppercase tracking-wider mb-3 ml-1">Preferences</h2>
-            <div className="bg-white rounded-3xl p-2 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-white flex flex-col">
+            <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-2">Preferences</h2>
+            <div className="bg-white rounded-[28px] p-2 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100/60 flex flex-col">
               
               <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-indigo-50 text-indigo-500' : 'bg-orange-50 text-orange-500'}`}>
-                    {isDark ? <Moon size={18} strokeWidth={2.5} /> : <Sun size={18} strokeWidth={2.5} />}
+                <div className="flex items-center gap-4">
+                  <div className={`w-11 h-11 rounded-[16px] flex items-center justify-center shadow-sm ${isDark ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white' : 'bg-gradient-to-br from-orange-400 to-amber-400 text-white'}`}>
+                    {isDark ? <Moon size={20} strokeWidth={2} /> : <Sun size={20} strokeWidth={2} />}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[15px] font-semibold text-gray-900">Dark Mode</span>
-                    <span className="text-[13px] text-gray-500 font-medium">Toggle app appearance</span>
+                    <span className="text-[15px] font-bold text-gray-900">Dark Mode</span>
+                    <span className="text-[12px] text-gray-500 font-medium leading-snug">Toggle app appearance</span>
                   </div>
                 </div>
-                <button 
-                  onClick={toggleTheme}
-                  className={`w-12 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-brand-blue' : 'bg-gray-200'}`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${isDark ? 'translate-x-6' : 'translate-x-0'}`}></div>
-                </button>
+                <Toggle checked={isDark} onChange={toggleTheme} />
               </div>
 
-              <div className="w-[calc(100%-2rem)] h-[1px] bg-gray-50 mx-auto"></div>
+              <div className="w-[calc(100%-3rem)] h-[1px] bg-gray-100 mx-auto" />
 
               <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center">
-                    <Bell size={18} strokeWidth={2.5} />
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center shadow-sm">
+                    <Bell size={20} strokeWidth={2} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[15px] font-semibold text-gray-900">Push Notifications</span>
-                    <span className="text-[13px] text-gray-500 font-medium">Reminders & Alerts</span>
+                    <span className="text-[15px] font-bold text-gray-900">Push Notifications</span>
+                    <span className="text-[12px] text-gray-500 font-medium leading-snug">Reminders & Alerts</span>
                   </div>
                 </div>
-                <button 
-                  onClick={toggleNotifications}
-                  disabled={isSubscribing}
-                  className={`w-12 h-6 rounded-full transition-colors relative ${notifications ? 'bg-brand-blue' : 'bg-gray-200'} ${isSubscribing ? 'opacity-50' : ''}`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${notifications ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <Toggle checked={notifications} onChange={toggleNotifications} disabled={isSubscribing} />
               </div>
 
-              <div className="w-[calc(100%-2rem)] h-[1px] bg-gray-50 mx-auto"></div>
+              <div className="w-[calc(100%-3rem)] h-[1px] bg-gray-100 mx-auto" />
 
               <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
-                    <Mail size={18} strokeWidth={2.5} />
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center shadow-sm">
+                    <Mail size={20} strokeWidth={2} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[15px] font-semibold text-gray-900">Email Notifications</span>
-                    <span className="text-[13px] text-gray-500 font-medium">Receive updates via email</span>
+                    <span className="text-[15px] font-bold text-gray-900">Email Notifications</span>
+                    <span className="text-[12px] text-gray-500 font-medium leading-snug">Updates via email</span>
                   </div>
                 </div>
-                <button 
-                  onClick={toggleEmailNotifications}
-                  className={`w-12 h-6 rounded-full transition-colors relative ${emailNotifications ? 'bg-brand-blue' : 'bg-gray-200'}`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <Toggle checked={emailNotifications} onChange={toggleEmailNotifications} />
               </div>
 
-              <div className="w-[calc(100%-2rem)] h-[1px] bg-gray-50 mx-auto"></div>
-
-              <InstallPWA variant="settings" />
-
-            </div>
-          </section>
-
-          {/* Data Management */}
-          <section>
-            <h2 className="text-[14px] font-bold text-brand-blue uppercase tracking-wider mb-3 ml-1">Data & Storage</h2>
-            <div className="bg-white rounded-3xl p-2 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-white flex flex-col">
-              
-              <div onClick={handleExportData} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 rounded-2xl transition-colors active:scale-[0.98]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center">
-                    <Download size={18} strokeWidth={2.5} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[15px] font-semibold text-gray-900">Export Notes</span>
-                    <span className="text-[13px] text-gray-500 font-medium">Download backup (JSON)</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="w-[calc(100%-2rem)] h-[1px] bg-gray-50 mx-auto"></div>
-
-              <div onClick={handleClearData} className="flex items-center justify-between p-4 cursor-pointer hover:bg-red-50 rounded-2xl transition-colors active:scale-[0.98]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
-                    <Trash2 size={18} strokeWidth={2.5} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[15px] font-semibold text-red-600">Clear All Data</span>
-                    <span className="text-[13px] text-red-400 font-medium">Delete everything from device</span>
-                  </div>
-                </div>
+              <div className="w-[calc(100%-3rem)] h-[1px] bg-gray-100 mx-auto" />
+              <div className="p-2">
+                <InstallPWA variant="settings" />
               </div>
 
             </div>
           </section>
 
-          {/* Security & Info */}
+          {/* Data & Storage */}
           <section>
-            <h2 className="text-[14px] font-bold text-brand-blue uppercase tracking-wider mb-3 ml-1">About</h2>
-            <div className="bg-white rounded-3xl p-2 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-white flex flex-col">
+            <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-2">Data & Storage</h2>
+            <div className="bg-white rounded-[28px] p-2 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100/60 flex flex-col">
               
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center">
-                    <Shield size={18} strokeWidth={2.5} />
+              <div onClick={handleExportData} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 rounded-[20px] transition-colors active:scale-[0.98]">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-[16px] bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <Download size={20} strokeWidth={2} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[15px] font-semibold text-gray-900">Privacy First</span>
-                    <span className="text-[13px] text-gray-500 font-medium">All data stays on this device</span>
+                    <span className="text-[15px] font-bold text-gray-900">Export Notes</span>
+                    <span className="text-[12px] text-gray-500 font-medium leading-snug">Download backup (JSON)</span>
                   </div>
                 </div>
               </div>
 
-              <div className="w-[calc(100%-2rem)] h-[1px] bg-gray-50 mx-auto"></div>
+              <div className="w-[calc(100%-3rem)] h-[1px] bg-gray-100 mx-auto" />
 
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center">
-                    <Database size={18} strokeWidth={2.5} />
+              <div onClick={handleClearData} className="flex items-center justify-between p-4 cursor-pointer hover:bg-red-50 rounded-[20px] transition-colors active:scale-[0.98]">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-[16px] bg-red-50 text-red-500 flex items-center justify-center">
+                    <Trash2 size={20} strokeWidth={2} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[15px] font-semibold text-gray-900">Local Storage (IndexedDB)</span>
-                    <span className="text-[13px] text-gray-500 font-medium">No backend database used</span>
+                    <span className="text-[15px] font-bold text-red-600">Clear All Data</span>
+                    <span className="text-[12px] text-red-400 font-medium leading-snug">Delete everything from device</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* About */}
+          <section>
+            <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-2">About</h2>
+            <div className="bg-white rounded-[28px] p-2 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100/60 flex flex-col">
+              
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-[16px] bg-gray-50 text-gray-500 flex items-center justify-center">
+                    <Shield size={20} strokeWidth={2} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[15px] font-bold text-gray-900">Privacy First</span>
+                    <span className="text-[12px] text-gray-500 font-medium leading-snug">All data stays on this device</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-[calc(100%-3rem)] h-[1px] bg-gray-100 mx-auto" />
+
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-[16px] bg-gray-50 text-gray-500 flex items-center justify-center">
+                    <Database size={20} strokeWidth={2} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[15px] font-bold text-gray-900">IndexedDB Storage</span>
+                    <span className="text-[12px] text-gray-500 font-medium leading-snug">Zero backend database used</span>
                   </div>
                 </div>
               </div>

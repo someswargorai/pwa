@@ -6,6 +6,7 @@ import {
   ListOrdered, Type, X, Hash, Bold, Italic, List, AlignLeft, Folder
 } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 const AI_ACTIONS = [
   { key: 'summarize', label: 'Summarize', icon: Sparkles, color: 'text-emerald-500', bg: 'bg-emerald-50', desc: 'Condense to key points' },
@@ -128,7 +129,12 @@ export default function CreateNoteView({ onClose, onSave }: {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#f8f9fc] text-gray-900 flex flex-col relative selection:bg-blue-100">
+    <motion.div 
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="min-h-[100dvh] w-full bg-[#f8f9fc] text-gray-900 flex flex-col relative selection:bg-blue-100"
+    >
 
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -304,6 +310,7 @@ export default function CreateNoteView({ onClose, onSave }: {
       </div>
 
       {/* ── DIALOG ── */}
+      <AnimatePresence>
       {dialog.open && (() => {
         const cfg = {
           tag:      { icon: Tag,    gradient: 'from-blue-500 to-indigo-500',    title: 'Add a Tag',      subtitle: 'Tags help you search and filter notes quickly.',         placeholder: 'e.g. Ideas, Important', btn: 'Add Tag' },
@@ -312,12 +319,19 @@ export default function CreateNoteView({ onClose, onSave }: {
         }[dialog.type!];
         const Icon = cfg.icon;
         return (
-          <div
-            className="fixed inset-0 z-[100] flex items-end justify-center bg-black/30 backdrop-blur-sm animate-in fade-in duration-200"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-end justify-center bg-black/30 backdrop-blur-sm"
             onClick={() => setDialog({ open: false, type: null })}
           >
-            <div
-              className="bg-white w-full max-w-lg rounded-t-[32px] overflow-hidden shadow-[0_-8px_60px_rgba(0,0,0,0.25)] animate-in slide-in-from-bottom-4 duration-300"
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="bg-white w-full max-w-lg rounded-t-[32px] overflow-hidden shadow-[0_-8px_60px_rgba(0,0,0,0.25)]"
               onClick={e => e.stopPropagation()}
             >
               {/* Gradient header */}
@@ -387,10 +401,11 @@ export default function CreateNoteView({ onClose, onSave }: {
                   Cancel
                 </button>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         );
       })()}
+      </AnimatePresence>
 
       <style>{`
         [contenteditable]:empty:before {
@@ -399,6 +414,6 @@ export default function CreateNoteView({ onClose, onSave }: {
           pointer-events: none;
         }
       `}</style>
-    </div>
+    </motion.div>
   );
 }

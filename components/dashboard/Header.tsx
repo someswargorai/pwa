@@ -21,7 +21,7 @@ export default function Header() {
     const loadProfile = () => {
       const savedName = localStorage.getItem('nexus_profile_name');
       const savedDesignation = localStorage.getItem('nexus_profile_designation');
-      const savedAvatar = localStorage.getItem('nexus_profile_avatar');
+      const savedAvatar = localStorage.getItem('nexus_profile_avatarSeed');
       if (savedName || savedDesignation || savedAvatar) {
         setProfile(prev => ({
           name: savedName || prev.name,
@@ -59,7 +59,7 @@ export default function Header() {
         <div className="relative">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-indigo-500 ring-2 ring-white shadow-md flex items-center justify-center">
             <img
-              src={`https://api.dicebear.com/9.x/notionists/svg?seed=${profile.avatarSeed}`}
+              src={`https://api.dicebear.com/7.x/notionists/svg?seed=${profile.avatarSeed}`}
               alt="Profile"
               className="w-full h-full object-cover"
             />

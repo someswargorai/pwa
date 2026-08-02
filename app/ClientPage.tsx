@@ -8,6 +8,7 @@ import { get, set } from "idb-keyval";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "@/components/dashboard/ConfirmModal";
 import ReminderModal from "@/components/dashboard/ReminderModal";
+import { motion } from "framer-motion";
 
 const MOCK_NOTES: Note[] = [
   {
@@ -95,8 +96,21 @@ export default function ClientPage() {
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="flex-1 w-full text-gray-900 relative selection:bg-brand-blue selection:text-white">
+    <div className="flex-1 w-full text-gray-900 relative selection:bg-brand-blue selection:text-white pb-24">
 
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -105,10 +119,14 @@ export default function ClientPage() {
         <div className="absolute top-[45%] right-[5%] w-[40%] h-[35%] bg-cyan-100/20 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl mx-auto px-5">
-
+      <motion.div 
+        className="relative z-10 w-full max-w-2xl mx-auto px-5"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
         {/* Hero header */}
-        <div className="pt-10 pb-2">
+        <motion.div variants={itemVariants} className="pt-10 pb-2">
           <p className="text-[13px] font-semibold text-gray-400 mb-1 tracking-wide uppercase">{today}</p>
           <h1 className="text-[32px] font-bold text-gray-900 tracking-tight leading-tight">
             Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'} 👋
@@ -116,23 +134,31 @@ export default function ClientPage() {
           <p className="text-[15px] text-gray-400 font-medium mt-1">
             {notes.length} note{notes.length !== 1 ? 's' : ''} · {notes.filter(n => n.isPinned).length} pinned
           </p>
-        </div>
+        </motion.div>
 
         {/* Search */}
-        <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        <motion.div variants={itemVariants}>
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        </motion.div>
 
         {/* Quick actions */}
-        {!searchQuery && <QuickActionsGrid />}
+        {!searchQuery && (
+          <motion.div variants={itemVariants}>
+            <QuickActionsGrid />
+          </motion.div>
+        )}
 
         {/* Notes feed */}
-        <RecentNotes
-          notes={searchQuery ? sortedNotes : sortedNotes}
-          onPin={handlePin}
-          onDelete={openDeleteModal}
-          onNotify={handleNotify}
-          searchQuery={searchQuery}
-        />
-      </div>
+        <motion.div variants={itemVariants}>
+          <RecentNotes
+            notes={searchQuery ? sortedNotes : sortedNotes}
+            onPin={handlePin}
+            onDelete={openDeleteModal}
+            onNotify={handleNotify}
+            searchQuery={searchQuery}
+          />
+        </motion.div>
+      </motion.div>
 
       <ConfirmModal
         isOpen={deleteModalOpen}
