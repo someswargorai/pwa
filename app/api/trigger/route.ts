@@ -8,12 +8,7 @@ const receiver = new Receiver({
   nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
 });
 
-webpush.setVapidDetails(
-  'mailto:somgorai726@gmail.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.PRIVATE_KEY!
-);
-
+// Initialize lazily in the POST handler to avoid build-time errors
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -61,12 +56,21 @@ export async function POST(req: Request) {
 
     // 4. Send Web Push Notification
     if (push && pushSubscription) {
-      promises.push(
-        webpush.sendNotification(
-          pushSubscription,
-          JSON.stringify({ title, body, icon: '/icon-192.jpg' })
-        )
-      );
+      if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.PRIVATE_KEY) {
+        console.error("Missing VAPID keys");
+      } else {
+        webpush.setVapidDetails(
+          'mailto:somgorai726@gmail.com',
+          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+          process.env.PRIVATE_KEY
+        );
+        promises.push(
+          webpush.sendNotification(
+            pushSubscription,
+            JSON.stringify({ title, body, icon: '/icon-192.jpg' })
+          )
+        );
+      }
     }
 
     await Promise.allSettled(promises);
