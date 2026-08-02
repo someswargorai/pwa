@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Circle, Clock, MoreHorizontal, Pin, Trash2, Bell } from "lucide-react";
+import { CheckCircle2, Circle, Clock, MoreHorizontal, Pin, Trash2, Bell, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,7 +16,19 @@ export interface Note {
   isPinned?: boolean;
 }
 
-export default function RecentNotes({ notes, onPin, onDelete, onNotify }: { notes: Note[], onPin?: (id: string) => void, onDelete?: (id: string) => void, onNotify?: (note: Note) => void }) {
+export default function RecentNotes({ 
+  notes, 
+  onPin, 
+  onDelete, 
+  onNotify,
+  searchQuery
+}: { 
+  notes: Note[], 
+  onPin?: (id: string) => void, 
+  onDelete?: (id: string) => void, 
+  onNotify?: (note: Note) => void,
+  searchQuery?: string
+}) {
   const router = useRouter();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [expandedNotes, setExpandedNotes] = useState<string[]>([]);
@@ -48,12 +60,30 @@ export default function RecentNotes({ notes, onPin, onDelete, onNotify }: { note
 
   return (
     <div className="w-full pb-20">
-      <h2 className="text-[17px] font-semibold text-gray-900 mb-4 px-1">Recent Notes</h2>
+      <h2 className="text-[17px] font-semibold text-gray-900 mb-4 px-1">
+        {searchQuery ? 'Search Results' : 'Recent Notes'}
+      </h2>
       
-      <div className="flex flex-col gap-4">
-        {notes.map((note) => (
-          <div 
-            key={note.id} 
+      {notes.length === 0 ? (
+        <div className="w-full py-16 flex flex-col items-center justify-center text-center px-4">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <Search size={24} className="text-gray-400" />
+          </div>
+          <h3 className="text-[17px] font-bold text-gray-900 mb-1">
+            {searchQuery ? "No matches found" : "No notes yet"}
+          </h3>
+          <p className="text-[14px] text-gray-500 max-w-[200px] leading-relaxed">
+            {searchQuery 
+              ? `We couldn't find any notes matching "${searchQuery}"`
+              : "Create your first note by tapping a quick action above!"
+            }
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {notes.map((note) => (
+            <div 
+              key={note.id} 
             onClick={(e) => {
               if ((e.target as HTMLElement).closest('a')) return;
               router.push(`/note/${note.id}`);
@@ -168,6 +198,7 @@ export default function RecentNotes({ notes, onPin, onDelete, onNotify }: { note
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

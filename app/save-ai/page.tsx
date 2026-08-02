@@ -59,7 +59,7 @@ export default function SaveAIPage() {
       <div className="relative z-10 w-full max-w-2xl mx-auto px-5 pt-4 flex flex-col h-full flex-1">
         
         {/* Header */}
-        <div className="flex items-center justify-between w-full pb-6">
+        <div className="flex items-center justify-between w-full pb-6 relative z-20">
           <button onClick={() => router.push("/")} className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-gray-600 hover:bg-gray-50 active:scale-95 transition-all">
             <ChevronLeft size={20} strokeWidth={2.5} />
           </button>

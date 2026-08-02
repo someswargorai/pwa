@@ -110,13 +110,17 @@ export default function ClientPage() {
 
       <div className="relative z-10 w-full h-full">
         <div className="w-full max-w-2xl mx-auto px-5 lg:pt-10">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          <SearchBar 
+            value={searchQuery} 
+            onChange={setSearchQuery} 
+          />
           {!searchQuery && <QuickActionsGrid />}
           <RecentNotes 
             notes={searchQuery ? sortedNotes : sortedNotes.slice(0, 3)} 
             onPin={handlePin}
             onDelete={openDeleteModal}
             onNotify={handleNotify}
+            searchQuery={searchQuery}
           />
         </div>
       </div>

@@ -86,21 +86,20 @@ export default function ReminderModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-              <Clock size={16} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Set Reminder</h2>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] relative animate-in zoom-in-95 duration-300 mx-auto">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <X size={16} />
+        </button>
+
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+            <Clock size={16} />
           </div>
-          <button 
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
-          >
-            <X size={16} />
-          </button>
+          <h2 className="text-xl font-bold text-gray-900">Set Reminder</h2>
         </div>
         
         <div className="flex flex-col gap-2 mb-8">

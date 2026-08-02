@@ -33,15 +33,16 @@ export default function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] relative animate-in zoom-in-95 duration-200 mx-auto">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <X size={16} />
+        </button>
+
+        <div className="flex items-center gap-2 mb-4">
           <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-          <button 
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
-          >
-            <X size={16} />
-          </button>
         </div>
         
         <p className="text-gray-500 text-[15px] mb-8 leading-relaxed">
