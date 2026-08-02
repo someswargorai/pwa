@@ -11,7 +11,7 @@ const receiver = new Receiver({
 webpush.setVapidDetails(
   'mailto:somgorai726@gmail.com',
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
+  process.env.PRIVATE_KEY!
 );
 
 const transporter = nodemailer.createTransport({
