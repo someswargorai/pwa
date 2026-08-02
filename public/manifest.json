@@ -7,7 +7,7 @@
   "background_color": "#f8f9fc",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#3b82f6",
+  "theme_color": "#f8f9fc",
   "dir": "ltr",
   "lang": "en-US",
   "categories": ["productivity", "utilities"],
@@ -55,10 +55,66 @@
   ],
   "shortcuts": [
     {
-      "name": "New Note",
-      "short_name": "Note",
-      "description": "Write a new note",
+      "name": "New Text Note",
+      "short_name": "Text",
+      "description": "Write a new text note",
       "url": "/save-text",
+      "icons": [
+        {
+          "src": "/icon-192.jpg",
+          "sizes": "192x192",
+          "type": "image/jpeg",
+          "purpose": "any maskable"
+        }
+      ]
+    },
+    {
+      "name": "New Voice Note",
+      "short_name": "Voice",
+      "description": "Record a voice note",
+      "url": "/save-voice",
+      "icons": [
+        {
+          "src": "/icon-192.jpg",
+          "sizes": "192x192",
+          "type": "image/jpeg",
+          "purpose": "any maskable"
+        }
+      ]
+    },
+    {
+      "name": "New Image Note",
+      "short_name": "Image",
+      "description": "Capture an image note",
+      "url": "/save-image",
+      "icons": [
+        {
+          "src": "/icon-192.jpg",
+          "sizes": "192x192",
+          "type": "image/jpeg",
+          "purpose": "any maskable"
+        }
+      ]
+    },
+    {
+      "name": "New AI Note",
+      "short_name": "AI Assist",
+      "description": "Create note with AI",
+      "url": "/save-ai",
+      "icons": [
+        {
+          "src": "/icon-192.jpg",
+          "sizes": "192x192",
+          "type": "image/jpeg",
+          "purpose": "any maskable"
+        }
+      ]
+    },
+    {
+      "name": "Master Checklist",
+      "short_name": "Tasks",
+      "description": "View your tasks",
+      "url": "/tasks",
       "icons": [
         {
           "src": "/icon-192.jpg",

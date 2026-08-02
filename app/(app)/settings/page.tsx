@@ -3,14 +3,16 @@
 import { useState, useEffect } from "react";
 import { clear, get } from "idb-keyval";
 import { toast } from "sonner";
-import { Moon, Sun, Download, Trash2, Bell, ChevronLeft, Shield, Database } from "lucide-react";
+import { Moon, Sun, Download, Trash2, Bell, ChevronLeft, Shield, Database, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import InstallPWA from "@/app/InstallPWA";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [isDark, setIsDark] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notifications, setNotifications] = useState(false);
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
   
   const [profile, setProfile] = useState({
     name: "Jhon Dong",
@@ -22,9 +24,9 @@ export default function SettingsPage() {
     if (document.documentElement.classList.contains('dark-theme')) {
       setIsDark(true);
     }
-    if (localStorage.getItem('nexus_notifications') === 'true' && "Notification" in window && Notification.permission === "granted") {
-      setNotificationsEnabled(true);
-    }
+    
+    setNotifications(localStorage.getItem('nexus_notifications') === 'true');
+    setEmailNotifications(localStorage.getItem('nexus_email_notifications') === 'true');
     
     const savedName = localStorage.getItem('nexus_profile_name');
     const savedDesignation = localStorage.getItem('nexus_profile_designation');
@@ -47,35 +49,82 @@ export default function SettingsPage() {
   const toggleTheme = () => {
     const isNowDark = !isDark;
     setIsDark(isNowDark);
-    if (isNowDark) {
-      document.documentElement.classList.add('dark-theme');
-      localStorage.setItem('theme', 'dark');
-    } else {
+    if (isDark) {
       document.documentElement.classList.remove('dark-theme');
       localStorage.setItem('theme', 'light');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#f8f9fc');
+    } else {
+      document.documentElement.classList.add('dark-theme');
+      localStorage.setItem('theme', 'dark');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#111827');
     }
   };
 
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
   const toggleNotifications = async () => {
-    if (notificationsEnabled) {
-      setNotificationsEnabled(false);
-      localStorage.setItem('nexus_notifications', 'false');
-      toast.success("Notifications disabled.");
-    } else {
-      if (!("Notification" in window)) {
-        toast.error("This browser does not support notifications.");
+    const isNowEnabled = !notifications;
+    
+    if (isNowEnabled) {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        toast.error("Push notifications are not supported by your browser");
         return;
       }
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        setNotificationsEnabled(true);
-        localStorage.setItem('nexus_notifications', 'true');
-        toast.success("Notifications enabled!");
-      } else {
-        setNotificationsEnabled(false);
-        localStorage.setItem('nexus_notifications', 'false');
-        toast.error("Notification permission denied.");
+
+      setIsSubscribing(true);
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          const registration = await navigator.serviceWorker.ready;
+          const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+          const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey!);
+
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedVapidKey
+          });
+
+          localStorage.setItem('nexus_push_subscription', JSON.stringify(subscription));
+          localStorage.setItem('nexus_notifications', 'true');
+          setNotifications(true);
+          toast.success("Push notifications enabled!");
+        } else {
+          toast.error("Notification permission denied");
+        }
+      } catch (err: any) {
+        console.error("Failed to subscribe to push", err);
+        toast.error("Failed to enable push notifications");
+      } finally {
+        setIsSubscribing(false);
       }
+    } else {
+      localStorage.setItem('nexus_notifications', 'false');
+      setNotifications(false);
+      toast.success("Push notifications disabled");
+    }
+  };
+
+  const toggleEmailNotifications = () => {
+    const isNowEnabled = !emailNotifications;
+    setEmailNotifications(isNowEnabled);
+    localStorage.setItem('nexus_email_notifications', isNowEnabled.toString());
+    if (isNowEnabled) {
+      toast.success("Email notifications enabled!");
+    } else {
+      toast.success("Email notifications disabled");
     }
   };
 
@@ -124,11 +173,9 @@ export default function SettingsPage() {
 
         <div className="flex flex-col gap-6">
           
-          {/* Profile */}
           <section>
             <h2 className="text-[14px] font-bold text-brand-blue uppercase tracking-wider mb-3 ml-1">Profile</h2>
             <div className="bg-white rounded-3xl p-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-white flex flex-col gap-4">
-              
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-bold text-gray-700 ml-1">Display Name</label>
                 <input 
@@ -138,7 +185,6 @@ export default function SettingsPage() {
                   className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-[15px] font-medium text-gray-900 outline-none focus:border-brand-blue focus:ring-0 transition-colors"
                 />
               </div>
-
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-bold text-gray-700 ml-1">Designation</label>
                 <input 
@@ -148,7 +194,6 @@ export default function SettingsPage() {
                   className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-[15px] font-medium text-gray-900 outline-none focus:border-brand-blue focus:ring-0 transition-colors"
                 />
               </div>
-
               <div className="flex flex-col gap-1.5 mb-1">
                 <label className="text-[13px] font-bold text-gray-700 ml-1">Avatar Seed (Text)</label>
                 <input 
@@ -159,11 +204,9 @@ export default function SettingsPage() {
                   className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-[15px] font-medium text-gray-900 outline-none focus:border-brand-blue focus:ring-0 transition-colors"
                 />
               </div>
-
             </div>
           </section>
 
-          {/* Preferences */}
           <section>
             <h2 className="text-[14px] font-bold text-brand-blue uppercase tracking-wider mb-3 ml-1">Preferences</h2>
             <div className="bg-white rounded-3xl p-2 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-white flex flex-col">
@@ -200,9 +243,30 @@ export default function SettingsPage() {
                 </div>
                 <button 
                   onClick={toggleNotifications}
-                  className={`w-12 h-6 rounded-full p-1 transition-colors ${notificationsEnabled ? 'bg-brand-blue' : 'bg-gray-200'}`}
+                  disabled={isSubscribing}
+                  className={`w-12 h-6 rounded-full transition-colors relative ${notifications ? 'bg-brand-blue' : 'bg-gray-200'} ${isSubscribing ? 'opacity-50' : ''}`}
                 >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${notificationsEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                  <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${notifications ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              <div className="w-[calc(100%-2rem)] h-[1px] bg-gray-50 mx-auto"></div>
+
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                    <Mail size={18} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[15px] font-semibold text-gray-900">Email Notifications</span>
+                    <span className="text-[13px] text-gray-500 font-medium">Receive updates via email</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={toggleEmailNotifications}
+                  className={`w-12 h-6 rounded-full transition-colors relative ${emailNotifications ? 'bg-brand-blue' : 'bg-gray-200'}`}
+                >
+                  <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
 

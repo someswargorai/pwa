@@ -90,36 +90,36 @@ export default function CreateNoteView({ onClose, onSave }: { onClose: () => voi
       }
 
       if (permission === "granted") {
-        toast.success(`Reminder scheduled for ${new Date(scheduledTime).toLocaleTimeString()}!`);
+        const pushEnabled = localStorage.getItem('nexus_notifications') === 'true';
+        const emailEnabled = localStorage.getItem('nexus_email_notifications') === 'true';
         
-        // Try to use the Notification Triggers API for true background scheduling (Android/Chrome)
-        if ('showTrigger' in Notification.prototype && 'serviceWorker' in navigator) {
-          navigator.serviceWorker.ready.then(reg => {
-            reg.showNotification(title || "Note Reminder", {
+        let pushSubscription = null;
+        if (pushEnabled) {
+          const sub = localStorage.getItem('nexus_push_subscription');
+          if (sub) pushSubscription = JSON.parse(sub);
+        }
+
+        try {
+          // Calculate delay in seconds
+          const delaySeconds = Math.max(0, Math.floor((scheduledTime - Date.now()) / 1000));
+          
+          await fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: title || "Note Reminder",
               body: "It's time to review your note!",
-              icon: "/icon-192.jpg",
-              // @ts-expect-error - experimental API
-              showTrigger: new window.TimestampTrigger(scheduledTime)
-            });
+              email: emailEnabled,
+              push: pushEnabled,
+              pushSubscription: pushSubscription,
+              delayStr: `${delaySeconds}s`
+            })
           });
-        } else {
-          // Native fallback scheduler (only works while app is open)
-          setTimeout(() => {
-            if (localStorage.getItem('nexus_notifications') !== 'true') return;
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.ready.then(reg => {
-                reg.showNotification(title || "Note Reminder", {
-                  body: "It's time to review your note!",
-                  icon: "/icon-192.jpg"
-                });
-              });
-            } else {
-              new Notification(title || "Note Reminder", {
-                body: "It's time to review your note!",
-                icon: "/icon-192.jpg"
-              });
-            }
-          }, delay);
+
+          toast.success(`Reminder scheduled via QStash for ${new Date(scheduledTime).toLocaleTimeString()}!`);
+        } catch (error) {
+          console.error("Failed to schedule via QStash", error);
+          toast.error("Failed to schedule reminder");
         }
       } else {
         toast.error("Notification permission denied.");
@@ -172,7 +172,7 @@ export default function CreateNoteView({ onClose, onSave }: { onClose: () => voi
             ref={contentRef}
             contentEditable
             onInput={(e) => setContent(e.currentTarget.innerHTML)}
-            className="w-full min-h-[120px] max-h-[40vh] overflow-y-auto text-[15px] font-medium text-gray-700 outline-none bg-transparent leading-relaxed prose prose-sm focus:outline-none empty:before:content-['Write_Your_Notes...'] empty:before:text-gray-300 custom-scrollbar"
+            className="w-full min-h-[120px] max-h-[40vh] overflow-y-auto text-[16px] font-medium text-gray-700 outline-none bg-transparent leading-relaxed prose prose-sm focus:outline-none empty:before:content-['Write_Your_Notes...'] empty:before:text-gray-300 custom-scrollbar"
           ></div>
         </div>
 

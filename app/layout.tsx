@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Layout from "./provider/tanstackQueryProvider";
 import { LayoutScript } from "./script/layout.script";
@@ -18,6 +18,13 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Nexus Dashboard",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8f9fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#111827" },
+  ],
 };
 
 const outfit = Outfit({
@@ -58,10 +65,17 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{
           __html: `
             try {
+              let isDark = false;
               if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark-theme');
+                isDark = true;
               } else {
                 document.documentElement.classList.remove('dark-theme');
+              }
+              // Sync the meta theme-color with the manual toggle on initial load
+              const themeMeta = document.querySelector('meta[name="theme-color"]');
+              if (themeMeta) {
+                themeMeta.setAttribute('content', isDark ? '#111827' : '#f8f9fc');
               }
             } catch (_) {}
           `
