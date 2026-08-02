@@ -8,7 +8,7 @@ import { get, set } from "idb-keyval";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "@/components/dashboard/ConfirmModal";
 import ReminderModal from "@/components/dashboard/ReminderModal";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 const MOCK_NOTES: Note[] = [
   {
