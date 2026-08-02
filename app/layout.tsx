@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8f9fc" },
-    { media: "(prefers-color-scheme: dark)", color: "#111827" },
+    { media: "(prefers-color-scheme: dark)", color: "#070603" },
   ],
 };
 
@@ -75,7 +75,7 @@ export default function RootLayout({
               // Sync the meta theme-color with the manual toggle on initial load
               const themeMeta = document.querySelector('meta[name="theme-color"]');
               if (themeMeta) {
-                themeMeta.setAttribute('content', isDark ? '#111827' : '#f8f9fc');
+                themeMeta.setAttribute('content', isDark ? '#070603' : '#f8f9fc');
               }
             } catch (_) {}
           `

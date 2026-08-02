@@ -68,14 +68,28 @@ export async function POST(req: Request) {
           webpush.sendNotification(
             pushSubscription,
             JSON.stringify({ title, body, icon: '/icon-192.jpg' })
-          )
+          ).catch((pushErr) => {
+            console.error("WEB PUSH FAILED DETAILED LOG:", {
+              errorName: pushErr?.name,
+              errorMessage: pushErr?.message,
+              endpoint: pushSubscription?.endpoint,
+              statusCode: pushErr?.statusCode,
+              body: pushErr?.body
+            });
+            throw pushErr;
+          })
         );
       }
     }
 
-    await Promise.allSettled(promises);
+    const results = await Promise.allSettled(promises);
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error(`Promise ${i} rejected:`, r.reason);
+      }
+    });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, results });
   } catch (error: any) {
     console.error("Trigger execution error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

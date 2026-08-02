@@ -190,7 +190,7 @@ export default function TasksPage() {
               {activeProjects.map((note) => (
                 <div key={note.id} className="bg-white rounded-[24px] p-5 shadow-[0_2px_15px_-5px_rgba(0,0,0,0.05)] border border-gray-50">
                   <div className="flex items-center justify-between mb-4 px-1">
-                    <h3 className="text-[17px] font-bold text-gray-900" style={{ color: note.color !== '#f8f9fc' ? '#111827' : 'inherit' }}>
+                    <h3 className="text-[17px] font-bold text-gray-900" style={{ color: note.color !== '#f8f9fc' ? '#070603' : 'inherit' }}>
                       {note.title}
                     </h3>
                     <button className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-50 transition-colors">

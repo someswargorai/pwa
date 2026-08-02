@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Circle, Clock, MoreHorizontal, Pin, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle, Clock, MoreHorizontal, Pin, Trash2, Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ export interface Note {
   isPinned?: boolean;
 }
 
-export default function RecentNotes({ notes, onPin, onDelete }: { notes: Note[], onPin?: (id: string) => void, onDelete?: (id: string) => void }) {
+export default function RecentNotes({ notes, onPin, onDelete, onNotify }: { notes: Note[], onPin?: (id: string) => void, onDelete?: (id: string) => void, onNotify?: (note: Note) => void }) {
   const router = useRouter();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [expandedNotes, setExpandedNotes] = useState<string[]>([]);
@@ -26,11 +26,12 @@ export default function RecentNotes({ notes, onPin, onDelete }: { notes: Note[],
     setOpenDropdownId(openDropdownId === id ? null : id);
   };
 
-  const handleAction = (e: React.MouseEvent, action: 'pin' | 'delete', id: string) => {
+  const handleAction = (e: React.MouseEvent, action: 'pin' | 'delete' | 'notify', note: Note) => {
     e.stopPropagation();
     setOpenDropdownId(null);
-    if (action === 'pin' && onPin) onPin(id);
-    if (action === 'delete' && onDelete) onDelete(id);
+    if (action === 'pin' && onPin) onPin(note.id);
+    if (action === 'delete' && onDelete) onDelete(note.id);
+    if (action === 'notify' && onNotify) onNotify(note);
   };
 
   const getTimeAgo = (timestamp: number) => {
@@ -80,11 +81,14 @@ export default function RecentNotes({ notes, onPin, onDelete }: { notes: Note[],
                 </button>
                 
                 {openDropdownId === note.id && (
-                  <div className="absolute right-0 top-10 w-36 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-20 py-1">
-                    <button onClick={(e) => handleAction(e, 'pin', note.id)} className="w-full px-4 py-2.5 text-left text-[14px] font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                  <div className="absolute right-0 top-10 w-52 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-20 py-1">
+                    <button onClick={(e) => handleAction(e, 'notify', note)} className="w-full px-4 py-2.5 text-left text-[14px] font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                      <Bell size={14} /> Set Reminder
+                    </button>
+                    <button onClick={(e) => handleAction(e, 'pin', note)} className="w-full px-4 py-2.5 text-left text-[14px] font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                       <Pin size={14} /> {note.isPinned ? 'Unpin' : 'Pin Note'}
                     </button>
-                    <button onClick={(e) => handleAction(e, 'delete', note.id)} className="w-full px-4 py-2.5 text-left text-[14px] font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2">
+                    <button onClick={(e) => handleAction(e, 'delete', note)} className="w-full px-4 py-2.5 text-left text-[14px] font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2">
                       <Trash2 size={14} /> Delete
                     </button>
                   </div>

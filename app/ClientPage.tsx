@@ -6,6 +6,8 @@ import QuickActionsGrid from "@/components/dashboard/QuickActionsGrid";
 import RecentNotes, { Note } from "@/components/dashboard/RecentNotes";
 import { get, set } from "idb-keyval";
 import { useRouter } from "next/navigation";
+import ConfirmModal from "@/components/dashboard/ConfirmModal";
+import ReminderModal from "@/components/dashboard/ReminderModal";
 
 // Mock data matching the screenshot exactly
 const MOCK_NOTES: Note[] = [
@@ -38,6 +40,13 @@ export default function ClientPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  
+  // Modal States
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+  
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
+  const [noteToNotify, setNoteToNotify] = useState<Note | null>(null);
 
   // Load from IndexedDB on mount
   useEffect(() => {
@@ -59,11 +68,22 @@ export default function ClientPage() {
     await set("nexus_dashboard_notes", updated);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this note?")) return;
-    const updated = notes.filter(n => n.id !== id);
+  const openDeleteModal = (id: string) => {
+    setNoteToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!noteToDelete) return;
+    const updated = notes.filter(n => n.id !== noteToDelete);
     setNotes(updated);
     await set("nexus_dashboard_notes", updated);
+    setNoteToDelete(null);
+  };
+
+  const handleNotify = (note: Note) => {
+    setNoteToNotify(note);
+    setReminderModalOpen(true);
   };
 
   // Filter and Sort
@@ -95,10 +115,28 @@ export default function ClientPage() {
           <RecentNotes 
             notes={searchQuery ? sortedNotes : sortedNotes.slice(0, 3)} 
             onPin={handlePin}
-            onDelete={handleDelete}
+            onDelete={openDeleteModal}
+            onNotify={handleNotify}
           />
         </div>
       </div>
+      
+      <ConfirmModal 
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+      />
+
+      {noteToNotify && (
+        <ReminderModal 
+          isOpen={reminderModalOpen}
+          onClose={() => setReminderModalOpen(false)}
+          noteTitle={noteToNotify.title || "Note"}
+          noteContent={noteToNotify.content || ""}
+        />
+      )}
     </div>
   );
 }

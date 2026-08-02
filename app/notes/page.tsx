@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import { get, set } from "idb-keyval";
 import { Note } from "@/components/dashboard/RecentNotes";
 import RecentNotes from "@/components/dashboard/RecentNotes";
+import ConfirmModal from "@/components/dashboard/ConfirmModal";
+import ReminderModal from "@/components/dashboard/ReminderModal";
 
 export default function AllNotesPage() {
   const [allNotes, setAllNotes] = useState<Note[]>([]);
@@ -12,6 +14,13 @@ export default function AllNotesPage() {
   // Pagination State
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
+
+  // Modal States
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+  
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
+  const [noteToNotify, setNoteToNotify] = useState<Note | null>(null);
 
   useEffect(() => {
     async function fetchNotes() {
@@ -27,11 +36,22 @@ export default function AllNotesPage() {
     await set("nexus_dashboard_notes", updated);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this note?")) return;
-    const updated = allNotes.filter(n => n.id !== id);
+  const openDeleteModal = (id: string) => {
+    setNoteToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!noteToDelete) return;
+    const updated = allNotes.filter(n => n.id !== noteToDelete);
     setAllNotes(updated);
     await set("nexus_dashboard_notes", updated);
+    setNoteToDelete(null);
+  };
+
+  const handleNotify = (note: Note) => {
+    setNoteToNotify(note);
+    setReminderModalOpen(true);
   };
 
   // Extract all unique categories/tags dynamically from the database
@@ -94,9 +114,10 @@ export default function AllNotesPage() {
         ) : (
           <div className="-mx-1">
             <RecentNotes 
-              notes={paginatedNotes} 
+              notes={paginatedNotes}
               onPin={handlePin}
-              onDelete={handleDelete}
+              onDelete={openDeleteModal}
+              onNotify={handleNotify}
             />
           </div>
         )}
@@ -104,12 +125,29 @@ export default function AllNotesPage() {
         {hasMore && (
           <button 
             onClick={() => setPage(p => p + 1)}
-            className="w-full py-4 rounded-2xl bg-white border border-gray-100 text-brand-blue font-semibold mt-[-20px] shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+            className="w-full py-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-brand-blue font-semibold mt-[-20px] shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all"
           >
             Load More Notes
           </button>
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+      />
+
+      {noteToNotify && (
+        <ReminderModal 
+          isOpen={reminderModalOpen}
+          onClose={() => setReminderModalOpen(false)}
+          noteTitle={noteToNotify.title || "Note"}
+          noteContent={noteToNotify.content || ""}
+        />
+      )}
     </div>
   );
 }

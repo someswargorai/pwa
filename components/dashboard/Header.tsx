@@ -44,16 +44,16 @@ export default function Header() {
   }, []);
 
   const toggleTheme = () => {
-    const isNowDark = !isDark;
-    setIsDark(isNowDark);
-    if (isDark) {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    if (newIsDark) {
+      document.documentElement.classList.add('dark-theme');
+      localStorage.setItem('theme', 'dark');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#070603');
+    } else {
       document.documentElement.classList.remove('dark-theme');
       localStorage.setItem('theme', 'light');
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#f8f9fc');
-    } else {
-      document.documentElement.classList.add('dark-theme');
-      localStorage.setItem('theme', 'dark');
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#111827');
     }
   };
 
