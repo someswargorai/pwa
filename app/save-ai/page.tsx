@@ -1,121 +1,290 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Sparkles, Send } from "lucide-react";
+import { ChevronLeft, Sparkles, Send, Save, Copy, RotateCcw, Check } from "lucide-react";
 import { get, set } from "idb-keyval";
 import { Note } from "@/components/dashboard/RecentNotes";
+import { toast } from "sonner";
+
+type Message = {
+  id: string;
+  role: "user" | "ai";
+  text: string;
+  loading?: boolean;
+};
+
+const SUGGESTIONS = [
+  "Write a packing list for a beach trip 🏖️",
+  "Summarise the benefits of meditation 🧘",
+  "Draft a weekly workout plan 💪",
+  "Give me ideas for a startup name 🚀",
+  "Write a morning routine for productivity ⚡",
+];
 
 export default function SaveAIPage() {
   const router = useRouter();
-  const [prompt, setPrompt] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleGenerateAndSave = async () => {
-    if (!prompt.trim() || isGenerating) return;
+  // Scroll to bottom on new message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Auto-resize textarea
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+  };
+
+  const sendMessage = async (text?: string) => {
+    const userText = (text ?? input).trim();
+    if (!userText || isGenerating) return;
+
+    const userMsg: Message = { id: Date.now().toString(), role: "user", text: userText };
+    const loadingId = (Date.now() + 1).toString();
+    const loadingMsg: Message = { id: loadingId, role: "ai", text: "", loading: true };
+
+    setMessages(prev => [...prev, userMsg, loadingMsg]);
+    setInput("");
+    if (inputRef.current) { inputRef.current.style.height = "auto"; }
     setIsGenerating(true);
 
     try {
-      // Call our Next.js backend which safely uses the Gemini API key
-      const response = await fetch("/api/generate", {
+      const history = messages
+        .filter(m => !m.loading)
+        .map(m => `${m.role === "user" ? "User" : "AI"}: ${m.text}`)
+        .join("\n");
+
+      const prompt = history
+        ? `${history}\nUser: ${userText}\n\nContinue the conversation naturally and helpfully. Keep the response concise and well-formatted.`
+        : `Write a complete, well-formatted, helpful response about: ${userText}`;
+
+      const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: `Write a complete, well-formatted note about: ${prompt.trim()}` }),
+        body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) throw new Error("Failed to generate");
-      const data = await response.json();
-      
-      const noteObj: Note = {
-        id: Date.now().toString(),
-        title: prompt.trim().substring(0, 30) + "...",
-        content: data.text,
-        tags: ["AI", "Generated"],
-        createdAt: Date.now(),
-        color: "#f3e8ff" // Purple tint for AI
-      };
+      if (!res.ok) throw new Error("API failed");
+      const data = await res.json();
 
-      const existingNotes = (await get("nexus_dashboard_notes")) || [];
-      const updatedNotes = [noteObj, ...existingNotes];
-      
-      await set("nexus_dashboard_notes", updatedNotes);
-      router.push("/");
-    } catch (error) {
-      console.error(error);
-      alert("Failed to generate note. Please try again.");
+      setMessages(prev =>
+        prev.map(m => m.id === loadingId ? { ...m, text: data.text, loading: false } : m)
+      );
+    } catch {
+      setMessages(prev =>
+        prev.map(m => m.id === loadingId ? { ...m, text: "Something went wrong. Please try again.", loading: false } : m)
+      );
+      toast.error("Generation failed.");
+    } finally {
       setIsGenerating(false);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const handleSave = async (text: string) => {
+    const firstUser = messages.find(m => m.role === "user");
+    const noteObj: Note = {
+      id: Date.now().toString(),
+      title: firstUser?.text.substring(0, 40) + (firstUser && firstUser.text.length > 40 ? "..." : "") || "AI Note",
+      content: text,
+      tags: ["AI", "Generated"],
+      createdAt: Date.now(),
+      color: "#f3e8ff",
+    };
+    const existing = (await get("nexus_dashboard_notes")) || [];
+    await set("nexus_dashboard_notes", [noteObj, ...existing]);
+    toast.success("Note saved!");
+    setTimeout(() => router.push("/"), 500);
+  };
+
+  const handleCopy = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(id);
+    toast.success("Copied!");
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   return (
-    <div className="min-h-[100dvh] w-full bg-[#f8f9fc] text-gray-900 pb-20 relative flex flex-col z-50">
-      
-      {/* Magical Background gradients */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-gradient-to-br from-[#f8f9fc] via-[#faf5ff] to-[#f0f4ff]">
-        <div className="absolute top-[10%] right-[-10%] w-[60%] h-[50%] bg-purple-400/20 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-[20%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-400/10 rounded-full blur-[100px]"></div>
+    /* Full-height flex column — header fixed, messages scroll, input pinned at bottom */
+    <div className="fixed inset-x-0 top-0 flex flex-col bg-[#f8f9fc] z-50" style={{ bottom: '88px', touchAction: "manipulation" }}>
+
+      {/* Ambient */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[55%] h-[50%] bg-violet-200/20 rounded-full blur-[130px]" />
+        <div className="absolute bottom-[5%] left-[-5%] w-[50%] h-[45%] bg-fuchsia-200/15 rounded-full blur-[110px]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl mx-auto px-5 pt-4 flex flex-col h-full flex-1">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between w-full pb-6 relative z-20">
-          <button onClick={() => router.push("/")} className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-gray-600 hover:bg-gray-50 active:scale-95 transition-all">
-            <ChevronLeft size={20} strokeWidth={2.5} />
-          </button>
-          <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-purple-500" />
-            <h1 className="text-[17px] font-semibold text-gray-900">AI Note</h1>
-          </div>
-          <div className="w-10"></div> {/* Spacer */}
+      {/* ── STICKY HEADER ── */}
+      <div className="relative z-20 bg-[#f8f9fc]/90 backdrop-blur-xl border-b border-gray-100/80 px-4 py-3 flex items-center gap-3 shrink-0">
+        <button
+          onClick={() => router.push("/")}
+          className="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors active:scale-90 shrink-0"
+        >
+          <ChevronLeft size={20} strokeWidth={2.5} />
+        </button>
+
+        {/* Avatar + name — WA style */}
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0 shadow-md">
+          <Sparkles size={16} className="text-white" strokeWidth={2} />
         </div>
-
-        {/* AI Prompt Area */}
-        <div className="flex-1 flex flex-col items-center justify-center -mt-20">
-          <div className="w-20 h-20 rounded-3xl bg-purple-100 flex items-center justify-center text-purple-500 mb-8 shadow-inner relative">
-             <div className="absolute inset-0 bg-purple-400 rounded-3xl blur-xl opacity-20"></div>
-             <Sparkles size={32} strokeWidth={2} />
-          </div>
-
-          <h2 className="text-[24px] font-semibold text-gray-900 text-center mb-2">What should I write?</h2>
-          <p className="text-[15px] text-gray-500 text-center mb-10 px-4">
-            Type a prompt and AI will generate a complete note for you instantly.
+        <div className="flex-1 min-w-0">
+          <p className="text-[15px] font-bold text-gray-900 leading-tight">Nexus AI</p>
+          <p className={`text-[11px] font-semibold leading-tight ${isGenerating ? "text-violet-500 animate-pulse" : "text-gray-400"}`}>
+            {isGenerating ? "typing..." : "Ask me anything"}
           </p>
-
-          <div className="w-full relative">
-            <textarea 
-              placeholder="e.g. Write a packing list for a 3-day beach trip..." 
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              disabled={isGenerating}
-              className="w-full min-h-[140px] bg-white rounded-3xl p-6 text-[16px] text-gray-900 placeholder:text-gray-400 outline-none shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white resize-none leading-relaxed focus:border-purple-200 transition-colors"
-            ></textarea>
-
-            <button 
-              onClick={handleGenerateAndSave}
-              disabled={!prompt.trim() || isGenerating}
-              className={`absolute bottom-4 right-4 w-12 h-12 flex items-center justify-center rounded-full shadow-lg transition-all ${
-                prompt.trim() && !isGenerating 
-                  ? "bg-purple-500 text-white hover:bg-purple-600 active:scale-95 shadow-purple-500/30" 
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              {isGenerating ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <Send size={18} className="ml-1" />
-              )}
-            </button>
-          </div>
-          
-          {isGenerating && (
-            <div className="mt-8 flex items-center gap-3 text-purple-600 animate-pulse">
-               <Sparkles size={16} />
-               <span className="font-medium text-[15px]">Generating your note...</span>
-            </div>
-          )}
         </div>
 
+        {messages.length > 0 && (
+          <button
+            onClick={() => setMessages([])}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 transition-colors active:scale-90"
+            title="Clear chat"
+          >
+            <RotateCcw size={14} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
+
+      {/* ── MESSAGES ── scrollable middle section */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 relative z-10" style={{ overscrollBehavior: "contain" }}>
+
+        {/* Empty state */}
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center px-4 pb-10">
+           
+            <h2 className="text-[22px] font-bold text-gray-900 mb-2">Nexus AI</h2>
+            <p className="text-[14px] text-gray-400 font-medium leading-relaxed max-w-[240px] mb-8">
+              Chat with AI, refine your ideas, then save the best response as a note.
+            </p>
+
+            {/* Suggestion chips */}
+            <div className="w-full flex flex-col gap-2 max-w-sm">
+              {SUGGESTIONS.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => sendMessage(s)}
+                  className="w-full text-left px-4 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm text-[13px] font-semibold text-gray-700 hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Messages */}
+        <div className="flex flex-col gap-3 max-w-xl mx-auto">
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex items-end gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+
+              {/* AI avatar */}
+              {msg.role === "ai" && (
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0 mb-0.5 shadow-sm">
+                  <Sparkles size={12} className="text-white" strokeWidth={2} />
+                </div>
+              )}
+
+              <div className={`max-w-[82%] relative group ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col`}>
+                {/* Bubble */}
+                <div className={`rounded-[20px] ${
+                  msg.role === "user"
+                    ? "bg-gray-900 text-white rounded-br-[6px] px-4 py-3"
+                    : "bg-white text-gray-800 border border-gray-100 shadow-sm rounded-bl-[6px] px-4 py-3"
+                }`}>
+                  {msg.loading ? (
+                    <div className="flex items-center gap-1 py-1 px-1">
+                      {[0, 1, 2].map(i => (
+                        <div
+                          key={i}
+                          className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"
+                          style={{ animationDelay: `${i * 0.15}s` }}
+                        />
+                      ))}
+                    </div>
+                  ) : msg.role === "user" ? (
+                    <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
+                  ) : (
+                    <div
+                      className="ai-prose text-[14px] leading-relaxed text-gray-800"
+                      dangerouslySetInnerHTML={{ __html: msg.text }}
+                    />
+                  )}
+                </div>
+
+                {/* Actions for AI messages */}
+                {msg.role === "ai" && !msg.loading && msg.text && (
+                  <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleCopy(msg.id, msg.text)}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-gray-100 shadow-sm text-[11px] font-bold text-gray-500 hover:text-gray-900 transition-colors active:scale-95"
+                    >
+                      {copied === msg.id ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                      {copied === msg.id ? "Copied" : "Copy"}
+                    </button>
+                    <button
+                      onClick={() => handleSave(msg.text)}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-500 shadow-sm text-[11px] font-bold text-white hover:bg-violet-600 transition-colors active:scale-95"
+                    >
+                      <Save size={11} />
+                      Save as note
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* ── INPUT BAR — pinned at bottom, shifts with keyboard ── */}
+      <div className="relative z-20 bg-[#f8f9fc]/95 backdrop-blur-xl border-t border-gray-100/80 px-4 py-3 shrink-0">
+        <div className="max-w-xl mx-auto flex items-center gap-2.5">
+          {/* Input */}
+          <div className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-[0_1px_6px_rgba(0,0,0,0.05)] focus-within:border-violet-300 focus-within:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] transition-all">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              placeholder="Message Nexus AI..."
+              disabled={isGenerating}
+              rows={1}
+              style={{ fontSize: "16px", lineHeight: "1.5" }}
+              className="w-full bg-transparent text-gray-900 font-medium placeholder:text-gray-400 outline-none resize-none overflow-hidden disabled:opacity-50"
+            />
+          </div>
+
+          {/* Send button */}
+          <button
+            onClick={() => sendMessage()}
+            disabled={!input.trim() || isGenerating}
+            className={`shrink-0 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
+              input.trim() && !isGenerating
+                ? "w-10 bg-gray-900 text-white shadow-lg shadow-gray-900/25 hover:bg-gray-800"
+                : "w-10 bg-gray-100 text-gray-300 cursor-not-allowed"
+            }`}
+          >
+            {isGenerating
+              ? <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+              : <Send size={15} strokeWidth={2.5} className={input.trim() ? "text-white -rotate-0 translate-x-px" : "text-gray-300"} />
+            }
+          </button>
+        </div>
       </div>
     </div>
   );

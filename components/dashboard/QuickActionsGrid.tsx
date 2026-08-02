@@ -3,57 +3,89 @@
 import { Type, AudioLines, Image as ImageIcon, BookOpenText } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+const actions = [
+  {
+    label: "Text",
+    desc: "Write your thoughts",
+    icon: Type,
+    route: "/save-text",
+    bg: "bg-white",
+    iconBg: "bg-gray-50",
+    iconColor: "text-gray-700",
+    border: "border border-gray-100",
+    shadow: "shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
+    titleColor: "text-gray-900",
+    descColor: "text-gray-400",
+    rotate: "",
+  },
+  {
+    label: "Voice",
+    desc: "Record your voice",
+    icon: AudioLines,
+    route: "/save-voice",
+    bg: "bg-gradient-to-br from-[#4d94ff] to-[#3b82f6]",
+    iconBg: "bg-white/20",
+    iconColor: "text-white",
+    border: "",
+    shadow: "shadow-[0_8px_24px_rgba(77,148,255,0.3)] hover:shadow-[0_12px_30px_rgba(77,148,255,0.4)]",
+    titleColor: "text-white",
+    descColor: "text-blue-100",
+    rotate: "rotate-2 hover:rotate-0",
+  },
+  {
+    label: "Image",
+    desc: "Capture from image",
+    icon: ImageIcon,
+    route: "/save-image",
+    bg: "bg-white",
+    iconBg: "bg-gray-50",
+    iconColor: "text-gray-700",
+    border: "border border-gray-100",
+    shadow: "shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
+    titleColor: "text-gray-900",
+    descColor: "text-gray-400",
+    rotate: "",
+  },
+  {
+    label: "AI",
+    desc: "Generate with AI",
+    icon: BookOpenText,
+    route: "/save-ai",
+    bg: "bg-white",
+    iconBg: "bg-gray-50",
+    iconColor: "text-gray-700",
+    border: "border border-gray-100",
+    shadow: "shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
+    titleColor: "text-gray-900",
+    descColor: "text-gray-400",
+    rotate: "",
+  },
+];
+
 export default function QuickActionsGrid() {
   const router = useRouter();
-  
+
   return (
-    <div className="grid grid-cols-2 gap-3 mb-8 w-full">
-      {/* Text Note */}
-      <button onClick={() => router.push('/save-text')} className="flex flex-col items-start bg-white rounded-3xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:bg-gray-50/50 transition-all active:scale-95 group text-left border border-gray-100">
-        <div className="w-10 h-10 rounded-2xl bg-[#f4f5f8] flex items-center justify-center text-gray-700 mb-6 group-hover:bg-gray-100 transition-colors">
-          <Type size={18} strokeWidth={2} />
-        </div>
-        <div>
-          <h3 className="font-semibold text-[15px] text-gray-900 mb-1">Text Note</h3>
-          <p className="text-[13px] text-gray-400 font-medium leading-snug">Write and save your thoughts</p>
-        </div>
-      </button>
-
-      {/* Voice Note (Solid Blue, Rotated) */}
-      <button 
-        onClick={() => router.push('/save-voice')}
-        className="flex flex-col items-start bg-[#4d94ff] rounded-3xl p-4 shadow-[0_8px_20px_rgba(77,148,255,0.25)] hover:shadow-[0_12px_25px_rgba(77,148,255,0.35)] transition-all active:scale-95 text-left rotate-3 hover:rotate-0"
-      >
-        <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-[#4d94ff] mb-6 shadow-sm">
-          <AudioLines size={18} strokeWidth={2} />
-        </div>
-        <div>
-          <h3 className="font-semibold text-[15px] text-white mb-1">Voice Note</h3>
-          <p className="text-[13px] text-blue-100 font-medium leading-snug">Record and save your voice</p>
-        </div>
-      </button>
-
-      {/* Image Note */}
-      <button onClick={() => router.push('/save-image')} className="flex flex-col items-start bg-white rounded-3xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:bg-gray-50/50 transition-all active:scale-95 group text-left border border-gray-100">
-        <div className="w-10 h-10 rounded-2xl bg-[#f4f5f8] flex items-center justify-center text-gray-700 mb-6 group-hover:bg-gray-100 transition-colors">
-          <ImageIcon size={18} strokeWidth={2} />
-        </div>
-        <div>
-          <h3 className="font-semibold text-[15px] text-gray-900 mb-1">Image Note</h3>
-          <p className="text-[13px] text-gray-400 font-medium leading-snug">Capture notes from images</p>
-        </div>
-      </button>
-
-      {/* AI Note */}
-      <button onClick={() => router.push('/save-ai')} className="flex flex-col items-start bg-white rounded-3xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:bg-gray-50/50 transition-all active:scale-95 group text-left border border-gray-100">
-        <div className="w-10 h-10 rounded-2xl bg-[#f4f5f8] flex items-center justify-center text-gray-700 mb-6 group-hover:bg-gray-100 transition-colors">
-          <BookOpenText size={18} strokeWidth={2} />
-        </div>
-        <div>
-          <h3 className="font-semibold text-[15px] text-gray-900 mb-1">AI Note</h3>
-          <p className="text-[13px] text-gray-400 font-medium leading-snug">Create notes with AI assistance</p>
-        </div>
-      </button>
+    <div className="mb-8">
+      <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-0.5">Quick Capture</p>
+      <div className="grid grid-cols-2 gap-3 w-full">
+        {actions.map((action) => {
+          const Icon = action.icon;
+          return (
+            <button
+              key={action.label}
+              onClick={() => router.push(action.route)}
+              className={`flex flex-col items-start ${action.bg} rounded-3xl p-4 transition-all duration-200 active:scale-95 text-left ${action.border} ${action.shadow} ${action.rotate}`}
+            >
+              <div className={`w-10 h-10 rounded-2xl ${action.iconBg} flex items-center justify-center ${action.iconColor} mb-5`}>
+                <Icon size={18} strokeWidth={2} />
+              </div>
+              <h3 className={`font-bold text-[15px] ${action.titleColor} mb-0.5`}>{action.label} Note</h3>
+              <p className={`text-[12px] ${action.descColor} font-medium leading-snug`}>{action.desc}</p>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

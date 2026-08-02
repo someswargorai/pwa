@@ -16,6 +16,7 @@
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-query-persist-client": "^5.101.4",
     "@upstash/qstash": "^2.11.3",
+    "cheerio": "^1.2.0",
     "compromise": "^14.16.0",
     "compromise-dates": "^3.8.1",
     "idb-keyval": "^6.3.0",
