@@ -29,8 +29,31 @@ export default function SaveAIPage() {
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [viewportHeight, setViewportHeight] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize viewport and lock body scroll on mount
+  useEffect(() => {
+    document.documentElement.style.height = "100%";
+    document.body.style.height = "100%";
+    document.body.style.overflow = "hidden";
+
+    const updateHeight = () => {
+      setViewportHeight(window.visualViewport?.height || window.innerHeight);
+    };
+
+    updateHeight();
+    window.visualViewport?.addEventListener("resize", updateHeight);
+    window.visualViewport?.addEventListener("scroll", updateHeight);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.visualViewport?.removeEventListener("resize", updateHeight);
+      window.visualViewport?.removeEventListener("scroll", updateHeight);
+    };
+  }, []);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -122,7 +145,7 @@ export default function SaveAIPage() {
 
   return (
     /* WhatsApp-style Fixed Viewport Layout */
-    <div className="fixed inset-0 flex flex-col bg-[#f8f9fc] z-50 overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="fixed inset-0 flex flex-col bg-[#f8f9fc] z-50 overflow-hidden" style={{ height: viewportHeight || '100dvh' }}>
 
       {/* Ambient */}
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -162,7 +185,7 @@ export default function SaveAIPage() {
       </div>
 
       {/* ── MESSAGES (Scrollable Area) ── */}
-      <div className="flex-1 w-full px-4 py-4 relative z-10 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div ref={messagesContainerRef} className="flex-1 w-full px-4 py-4 relative z-10 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
 
         {/* Empty state */}
         {messages.length === 0 && (
@@ -271,6 +294,14 @@ export default function SaveAIPage() {
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
+              onFocus={() => {
+                requestAnimationFrame(() => {
+                  messagesContainerRef.current?.scrollTo({
+                    top: messagesContainerRef.current.scrollHeight,
+                    behavior: "smooth",
+                  });
+                });
+              }}
               placeholder="Message Nexus AI..."
               disabled={isGenerating}
               rows={1}
