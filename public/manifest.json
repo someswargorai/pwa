@@ -13,42 +13,42 @@
   "categories": ["productivity", "utilities"],
   "icons": [
     {
-      "src": "/icon-192.jpg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-192.jpg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-512.jpg",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.jpg",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/dashboard_mockup.jpg",
+      "src": "/dashboard_mockup.png",
       "sizes": "1024x1024",
-      "type": "image/jpeg",
+      "type": "image/png",
       "form_factor": "wide",
       "label": "Nexus Dashboard"
     },
     {
-      "src": "/dashboard_mockup.jpg",
+      "src": "/dashboard_mockup.png",
       "sizes": "1024x1024",
-      "type": "image/jpeg",
+      "type": "image/png",
       "form_factor": "narrow",
       "label": "Nexus Mobile View"
     }
@@ -61,9 +61,9 @@
       "url": "/save-text",
       "icons": [
         {
-          "src": "/icon-192.jpg",
+          "src": "/icon-192.png",
           "sizes": "192x192",
-          "type": "image/jpeg",
+          "type": "image/png",
           "purpose": "any maskable"
         }
       ]
@@ -75,9 +75,9 @@
       "url": "/save-voice",
       "icons": [
         {
-          "src": "/icon-192.jpg",
+          "src": "/icon-192.png",
           "sizes": "192x192",
-          "type": "image/jpeg",
+          "type": "image/png",
           "purpose": "any maskable"
         }
       ]
@@ -89,9 +89,9 @@
       "url": "/save-image",
       "icons": [
         {
-          "src": "/icon-192.jpg",
+          "src": "/icon-192.png",
           "sizes": "192x192",
-          "type": "image/jpeg",
+          "type": "image/png",
           "purpose": "any maskable"
         }
       ]
@@ -103,9 +103,9 @@
       "url": "/save-ai",
       "icons": [
         {
-          "src": "/icon-192.jpg",
+          "src": "/icon-192.png",
           "sizes": "192x192",
-          "type": "image/jpeg",
+          "type": "image/png",
           "purpose": "any maskable"
         }
       ]
@@ -117,9 +117,9 @@
       "url": "/tasks",
       "icons": [
         {
-          "src": "/icon-192.jpg",
+          "src": "/icon-192.png",
           "sizes": "192x192",
-          "type": "image/jpeg",
+          "type": "image/png",
           "purpose": "any maskable"
         }
       ]
